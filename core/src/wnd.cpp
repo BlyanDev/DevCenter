@@ -806,8 +806,3 @@ void c_wnd::draw_custom_shape(int l, int t, int r, int b, unsigned int color, co
 {
 	m_surface->draw_custom_shape(l, t, r, b, color, pRgn, m_z_order);
 }
-
-void c_wnd::draw_bitmap_in_rect(const GUI_BITMAP *pBitmap, c_rect rect, unsigned int align_type)
-{
-	c_bitmap::draw_bitmap_in_rect(m_surface, m_z_order, pBitmap, rect, m_style);
-}

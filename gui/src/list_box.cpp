@@ -1,14 +1,16 @@
 #include "../core_include/api.h"
 #include "../core_include/rect.h"
 #include "../core_include/cmd_target.h"
+#include "../core_include/resource_type.h"
 #include "../core_include/wnd.h"
+#include "../core_include/surface.h"
+#include "../core_include/bitmap.h"
+#include "../core_include/word.h"
+
 #include "../gui_include/button.h"
 #include "../gui_include/font.h"
 #include "../gui_include/dialog.h"
 #include "../gui_include/list_box.h"
-#include "../core_include/resource_type.h"
-#include "../core_include/word.h"
-#include "../core_include/surface.h"
 #include "../gui_include/shape_resource.h"
 #include <string.h>
 
@@ -87,7 +89,7 @@ void c_list_box::on_paint()
 	case STATUS_DISABLED:
 		if (m_bitmap_disable)
 		{
-			draw_bitmap_in_rect(m_bitmap_disable, rect, m_style);
+			c_bitmap::draw_bitmap_in_rect(m_surface, m_z_order, m_bitmap_disable, rect, m_style);
 		}
 		else
 		{
