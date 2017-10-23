@@ -32,7 +32,6 @@ void c_label::on_paint()
 	if (m_str_id)
 	{
 		fill_rect(rect.m_left, rect.m_top, rect.m_right, rect.m_bottom,m_bg_color);
-		c_word *p = c_word::get_instance();
-		p->draw_string_in_rect(m_surface, m_z_order, m_str_id, rect, m_font_type, m_font_color, COLOR_TRANPARENT, m_style);
+		c_word::draw_string_in_rect(m_surface, m_z_order, m_str_id, rect, m_font_type, m_font_color, COLOR_TRANPARENT, m_style);
 	}
 }

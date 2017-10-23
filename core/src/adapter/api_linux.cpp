@@ -96,6 +96,7 @@ static int set_a_timer(int interval, void (* timer_proc) (void* ptmr, void* parg
 
     if(i >= MAX_TIMER_CNT)
     {
+    	ASSERT(FALSE);
         return (-1);
     }
     return (i);
@@ -231,40 +232,6 @@ T_TIME set_time(T_TIME ret)
 
 	settimeofday(&time_tv, NULL);
 	return ret;
-}
-
-unsigned char check_sum(unsigned char* data, int len)
-{
-	unsigned int sum = 0;
-	for(int i = 0; i < len; i++)
-	{
-		sum += data[i];
-	}
-	return sum&0xff;
-}
-
-void value_2_string(int value, char* text, int digit)
-{
-	if (XXX == value  )
-	{
-		sprintf(text, "%s", "---");
-		return;
-	}
-	switch(digit)
-	{
-	case 0:
-		sprintf(text, "%d", value);
-		break;
-	case 1:
-		sprintf(text, "%.1f", value*1.0/10);
-		break;
-	case 2:
-		sprintf(text, "%.2f", value*1.0/100);
-		break;
-	default:
-		sprintf(text, "%d", value);
-		break;
-	}
 }
 
 void create_thread(unsigned long* thread_id, void* attr, void *(*start_routine) (void *), void* arg)

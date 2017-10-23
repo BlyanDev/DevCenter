@@ -243,11 +243,10 @@ void c_wave_ctrl::on_paint()
 	
 	fill_rect(rect.m_left, rect.m_top, rect.m_right, rect.m_bottom, m_back_color);
 	
-	c_word *p = c_word::get_instance();
 	//show name
-	p->draw_string(m_surface, m_z_order, m_wave_name, m_wave_left + 10, rect.m_top, m_wave_name_font_type, m_wave_name_color, COLOR_TRANPARENT, ALIGN_LEFT);
+	c_word::draw_string(m_surface, m_z_order, m_wave_name, m_wave_left + 10, rect.m_top, m_wave_name_font_type, m_wave_name_color, COLOR_TRANPARENT, ALIGN_LEFT);
 	//show unit
-	p->draw_string(m_surface, m_z_order, m_wave_unit, m_wave_left + 60, rect.m_top, m_wave_unit_font_type, m_wave_unit_color, COLOR_TRANPARENT, ALIGN_LEFT);
+	c_word::draw_string(m_surface, m_z_order, m_wave_unit, m_wave_left + 60, rect.m_top, m_wave_unit_font_type, m_wave_unit_color, COLOR_TRANPARENT, ALIGN_LEFT);
 
 	save_foreground();
 }

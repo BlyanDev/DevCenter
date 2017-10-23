@@ -22,14 +22,14 @@ void c_word::initiallize(LANGUAGE_TYPE language)
 void c_word::draw_value_in_rect(c_surface* surface, int z_order, int value, int dot_position, c_rect rect, const GUI_FONT* font, unsigned int font_color, unsigned int bg_color, unsigned int align_type)
 {
 	char buf[BUFFER_LEN];
-	value_2_string(value, dot_position, buf);
+	value_2_string(value, dot_position, buf, BUFFER_LEN);
 	draw_string_in_rect(surface, z_order, buf, rect, font, font_color, bg_color, align_type);
 }
 
 void c_word::draw_value(c_surface* surface, int z_order, int value, int dot_position, int x, int y, const GUI_FONT* font, unsigned int font_color, unsigned int bg_color, unsigned int align_type)
 {
 	char buf[BUFFER_LEN];
-	value_2_string(value, dot_position, buf);
+	value_2_string(value, dot_position, buf, BUFFER_LEN);
 	draw_string(surface, z_order, buf, x, y, font, font_color, bg_color, align_type);
 }
 
@@ -117,103 +117,31 @@ const int c_word::get_font_ysize(const GUI_FONT* font_type)
 	return font_type->YSize;
 }
 
-void c_word::value_2_string(int value, int dot_position, char* buf)
+void c_word::value_2_string(int value, int dot_position, char* buf, int len)
 {
-	memset(buf, 0, BUFFER_LEN);
-	sprintf(buf, "%d", value);
-	int len = strlen(buf);
-
-	if (len > (BUFFER_LEN - 1))
+	memset(buf, 0, len);
+	if (XXX == value)
 	{
-		ASSERT(0);
-		return ;
+		sprintf(buf, "%s", "---");
+		return;
 	}
-
-	int i, point_pos;
-	if (value >= 0)
+	switch (dot_position)
 	{
-		if (len > dot_position)
-		{		
-			if (dot_position)
-			{
-				if (len + 1 > (BUFFER_LEN - 1))
-				{
-					ASSERT(0);
-					return ;
-				}
-
-				point_pos = len - dot_position;
-
-				for (i = len; i >= point_pos; i--)
-				{
-					buf[i + 1] = buf[i];
-				}
-
-				buf[point_pos] = '.';
-				buf[len + 1] = '\0';
-			}
-		}
-		else
-		{
-			if ((dot_position + 2) >= BUFFER_LEN)
-			{
-				ASSERT(0);
-			}
-
-			for (i = len; i >= 0; i--)
-			{
-				buf[i + dot_position + 2 - len] = buf[i];
-			}
-			for (i = 0; i< (dot_position + 2 - len); i++)
-			{
-				buf[i] = '0';
-			}
-
-			buf[1] = '.';
-		}
-	}
-	else
-	{//value < 0
-		if ((len - 1) > dot_position)
-		{		
-			if (dot_position)
-			{
-				if (len + 1 > (BUFFER_LEN -1))
-				{
-					ASSERT(0);
-					return ;
-				}
-
-				point_pos = len - dot_position;
-
-				for (i = len; i >= point_pos; i--)
-				{
-					buf[i + 1] = buf[i];
-				}
-
-				buf[point_pos] = '.';
-				buf[len + 1] = '\0';
-			}
-		}
-		else
-		{
-			if ((dot_position + 2) >= BUFFER_LEN)
-			{
-				ASSERT(0);
-			}
-
-			for (i = len; i >= 0; i--)
-			{
-				buf[i + dot_position + 3 - len] = buf[i];
-			}
-			for (i = 0; i< (dot_position + 4 - len); i++)
-			{
-				buf[i] = '0';
-			}
-
-			buf[0] = '-';
-			buf[2] = '.';
-		}
+	case 0:
+		sprintf(buf, "%d", value);
+		break;
+	case 1:
+		sprintf(buf, "%.1f", value*1.0 / 10);
+		break;
+	case 2:
+		sprintf(buf, "%.2f", value*1.0 / 100);
+		break;
+	case 3:
+		sprintf(buf, "%.3f", value*1.0 / 1000);
+		break;
+	default:
+		ASSERT(FALSE);
+		break;
 	}
 }
 
