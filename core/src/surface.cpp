@@ -171,118 +171,114 @@ void c_surface::draw_vline(int x, int y0, int y1, unsigned int rgb, unsigned int
 
 void c_surface::draw_line(int x1, int y1, int x2, int y2, unsigned int rgb, unsigned int z_order)
 {
-	int dx,dy,e;
-	dx=x2-x1;
-	dy=y2-y1;
+	int dx, dy, e;
+	dx = x2 - x1;
+	dy = y2 - y1;
 
-	if(dx>=0)
+	if ((dx >= 0) && (dy >= 0))
 	{
-		if(dy >= 0)
+		if (dx >= dy)
 		{
-			if(dx>=dy)
+			e = dy - dx / 2;
+			while (x1 <= x2)
 			{
-				e=dy-dx/2;
-				while(x1<=x2)
-				{
-					set_pixel(x1,y1,rgb,z_order);
-					if(e>0){y1+=1;e-=dx;}
-					x1+=1;
-					e+=dy;
-				}
-			}
-			else
-			{
-				e=dx-dy/2;
-				while(y1<=y2)
-				{
-					set_pixel(x1,y1,rgb,z_order);
-					if(e>0){x1+=1;e-=dy;}
-					y1+=1;
-					e+=dx;
-				}
+				set_pixel(x1, y1, rgb, z_order);
+				if (e>0) { y1++; e -= dx; }
+				x1++;
+				e += dy;
 			}
 		}
 		else
 		{
-			dy=-dy;
-
-			if(dx>=dy)
+			e = dx - dy / 2;
+			while (y1 <= y2)
 			{
-				e=dy-dx/2;
-				while(x1<=x2)
-				{
-					set_pixel(x1,y1,rgb,z_order);
-					if(e>0){y1-=1;e-=dx;}
-					x1+=1;
-					e+=dy;
-				}
-			}
-			else
-			{
-				e=dx-dy/2;
-				while(y1>=y2)
-				{
-					set_pixel(x1,y1,rgb,z_order);
-					if(e>0){x1+=1;e-=dy;}
-					y1-=1;
-					e+=dx;
-				}
+				set_pixel(x1, y1, rgb, z_order);
+				if (e>0) { x1++; e -= dy; }
+				y1++;
+				e += dx;
 			}
 		}
 	}
-	else
+
+	else if ((dx >= 0) && (dy < 0))
 	{
-		dx=-dx;
-		if(dy >= 0)
+		dy = -dy;
+		if (dx >= dy)
 		{
-			if(dx>=dy)
+			e = dy - dx / 2;
+			while (x1 <= x2)
 			{
-				e=dy-dx/2;
-				while(x1>=x2)
-				{
-					set_pixel(x1,y1,rgb,z_order);
-					if(e>0){y1+=1;e-=dx;}
-					x1-=1;
-					e+=dy;
-				}
-			}
-			else
-			{
-				e=dx-dy/2;
-				while(y1<=y2)
-				{
-					set_pixel(x1,y1,rgb,z_order);
-					if(e>0){x1-=1;e-=dy;}
-					y1+=1;
-					e+=dx;
-				}
+				set_pixel(x1, y1, rgb, z_order);
+				if (e>0) { y1--; e -= dx; }
+				x1++;
+				e += dy;
 			}
 		}
 		else
 		{
-			dy=-dy;
-
-			if(dx>=dy)
+			e = dx - dy / 2;
+			while (y1 >= y2)
 			{
-				e=dy-dx/2;
-				while(x1>=x2)
-				{
-					set_pixel(x1,y1,rgb,z_order);
-					if(e>0){y1-=1;e-=dx;}
-					x1-=1;
-					e+=dy;
-				}
+				set_pixel(x1, y1, rgb, z_order);
+				if (e>0) { x1++; e -= dy; }
+				y1--;
+				e += dx;
 			}
-			else
+		}
+	}
+
+	else if ((dx < 0) && (dy >= 0))
+	{
+		dx = -dx;
+		if (dx >= dy)
+		{
+			e = dy - dx / 2;
+			while (x1 >= x2)
 			{
-				e=dx-dy/2;
-				while(y1>=y2)
-				{
-					set_pixel(x1,y1,rgb,z_order);
-					if(e>0){x1-=1;e-=dy;}
-					y1-=1;
-					e+=dx;
-				}
+				set_pixel(x1, y1, rgb, z_order);
+				if (e>0) { y1++; e -= dx; }
+				x1--;
+				e += dy;
+			}
+		}
+		else
+		{
+			e = dx - dy / 2;
+			while (y1 <= y2)
+			{
+				set_pixel(x1, y1, rgb, z_order);
+				if (e>0) { x1--; e -= dy; }
+				y1++;
+				e += dx;
+			}
+		}
+	}
+
+	else if ((dx < 0) && (dy < 0))
+	{
+		dx = -dx;
+		dy = -dy;
+		if (dx >= dy)
+		{
+			e = dy - dx / 2;
+			while (x1 >= x2)
+			{
+				set_pixel(x1, y1, rgb, z_order);
+				if (e>0) { y1--; e -= dx; }
+				x1--;
+				e += dy;
+			}
+		}
+		else
+		{
+			e = dx - dy / 2;
+			while (y1 >= y2)
+			{
+				set_pixel(x1, y1, rgb, z_order);
+				if (e>0) { x1--; e -= dy; }
+				y1--;
+				e += dx;
 			}
 		}
 	}
