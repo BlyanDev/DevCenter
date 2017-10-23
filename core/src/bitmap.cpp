@@ -4,21 +4,18 @@
 #include "../core_include/bitmap.h"
 #include "../core_include/surface.h"
 
-int c_bitmap::ms_z_order;
-c_surface* c_bitmap::ms_surface;
-
-void c_bitmap::draw_bitmap(const GUI_BITMAP *pBitmap, int x, int y)
+void c_bitmap::draw_bitmap(c_surface* surface, int z_order, const GUI_BITMAP *pBitmap, int x, int y)
 {
 	if (0 == pBitmap)
 	{
 		return;
 	}
 
-	draw_bitmap_565(x, y, pBitmap->XSize, pBitmap->YSize,
+	draw_bitmap_565(surface, z_order, x, y, pBitmap->XSize, pBitmap->YSize,
 		(unsigned char const *)pBitmap->pData);
 }
 
-void c_bitmap::draw_bitmap_in_rect(const GUI_BITMAP *pBitmap, c_rect rect, unsigned int align_type)
+void c_bitmap::draw_bitmap_in_rect(c_surface* surface, int z_order, const GUI_BITMAP *pBitmap, c_rect rect, unsigned int align_type)
 {
 	if (0 == pBitmap)
 	{
@@ -26,7 +23,7 @@ void c_bitmap::draw_bitmap_in_rect(const GUI_BITMAP *pBitmap, c_rect rect, unsig
 	}
 	int x, y;
 	get_bitmap_pos(pBitmap, rect, align_type, x, y);
-	draw_bitmap_565_inrect(rect.m_left + x, rect.m_top + y,
+	draw_bitmap_565_inrect(surface, z_order, rect.m_left + x, rect.m_top + y,
 			(rect.m_right - rect.m_left + 1), (rect.m_bottom - rect.m_top + 1),
 			pBitmap->XSize, pBitmap->YSize, (unsigned char const *)pBitmap->pData);
 }
@@ -87,7 +84,7 @@ void c_bitmap::get_bitmap_pos(const GUI_BITMAP *pBitmap, c_rect rect, unsigned i
 	}
 }
 
-void c_bitmap::draw_bitmap_565(int x, int y, int xsize, int ysize, const unsigned char* pPixel)
+void c_bitmap::draw_bitmap_565(c_surface* surface, int z_order, int x, int y, int xsize, int ysize, const unsigned char* pPixel)
 {
 	const unsigned short* pData;
 	pData = (const unsigned short*)pPixel;
@@ -98,13 +95,13 @@ void c_bitmap::draw_bitmap_565(int x, int y, int xsize, int ysize, const unsigne
 		const unsigned short * p = pData;
 		for (int i = 0; i < xsize; i++) 
 		{
-			ms_surface->set_pixel(x + i, y + j, *p++, ms_z_order);
+			surface->set_pixel(x + i, y + j, *p++, z_order);
 		}
 		pData += BytesPerLine;
 	}
 }
 
-void c_bitmap::draw_bitmap_565_inrect(int x, int y, int width, int height, int xsize, int ysize, const unsigned char* pPixel)
+void c_bitmap::draw_bitmap_565_inrect(c_surface* surface, int z_order, int x, int y, int width, int height, int xsize, int ysize, const unsigned char* pPixel)
 {
 	const unsigned short* pData;
 	pData = (const unsigned short*)pPixel;
@@ -117,7 +114,7 @@ void c_bitmap::draw_bitmap_565_inrect(int x, int y, int width, int height, int x
 		for (int i = 0; i < xsize; i++)
 		{
 			if(i >= width)break;
-			ms_surface->set_pixel(x + i, y + j, *p++, ms_z_order);
+			surface->set_pixel(x + i, y + j, *p++, z_order);
 		}
 		pData += BytesPerLine;
 	}
