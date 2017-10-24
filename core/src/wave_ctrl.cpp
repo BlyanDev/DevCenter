@@ -15,17 +15,16 @@
 	x = (x < low_limit) ? low_limit : x;\
 }while(0)
 
-#define WAVE_CURSOR_WIDTH			8
-#define SHORTAGE_TOLERANCE			4
-#define	WAVE_LINE_WIDTH				1
+#define WAVE_CURSOR_WIDTH		8
+#define DATA_THRESHOLD			4
+#define	WAVE_LINE_WIDTH			1
 
 c_wave_ctrl::c_wave_ctrl()
 {
 	m_wave = NULL;
 	m_bg_fb = NULL;
 	m_wave_name_font_type  = m_wave_unit_font_type = NULL;
-	m_wave_name = 0;
-	m_wave_unit = 0;
+	m_wave_name = m_wave_unit = 0;
 	m_max_data = 500;
 	m_min_data = 0;
 	m_pivot_data  = 250;
@@ -34,15 +33,8 @@ c_wave_ctrl::c_wave_ctrl()
 	m_gain = GAIN_100;
 	m_frame_len_map_index = 0;
 
-	m_wave_name_color  = GLT_RGB(230,109,49);
-	m_wave_unit_color  = GLT_RGB(230,109,49);
-	m_wave_color = GLT_RGB(255,155,57);
+	m_wave_name_color  = m_wave_unit_color = m_wave_color = GLT_RGB(255,0,0);
 	m_back_color = GLT_RGB(0,0,0);
-}
-
-void c_wave_ctrl::pre_create_wnd()
-{
-	m_style = GLT_ATTR_VISIBLE;
 }
 
 void c_wave_ctrl::on_init_children()
@@ -124,7 +116,7 @@ bool c_wave_ctrl::is_data_enough()
 		return false;
 	}
 	return ((m_frame_len_map[m_frame_len_map_index] * m_wave_speed - m_wave->get_cnt()) <
-			SHORTAGE_TOLERANCE)?true:false;
+			DATA_THRESHOLD)?true:false;
 }
 
 void c_wave_ctrl::refresh_wave(unsigned char frame)
@@ -158,7 +150,6 @@ void c_wave_ctrl::refresh_wave(unsigned char frame)
 			min = ((min - m_pivot_data) >> 1) + m_pivot_data;
 			break;
 		case GAIN_200:
-		case GAIN_400:
 			mid = ((mid - m_pivot_data) << 1) + m_pivot_data;
 			max = ((max - m_pivot_data) << 1) + m_pivot_data;
 			min = ((min - m_pivot_data) << 1) + m_pivot_data;

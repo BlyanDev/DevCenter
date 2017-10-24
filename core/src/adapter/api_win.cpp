@@ -151,12 +151,7 @@ void start_real_timer(void (*func)(void* arg))
 	}
 }
 
-long int get_tick()
-{
-	return GetTickCount64();
-}
-
-unsigned int get_current_task_id()
+unsigned int get_cur_thread_id()
 {
 	return GetCurrentThreadId();
 }
@@ -198,12 +193,6 @@ T_TIME second_to_day(long second)
 	ret.minute = second % 60;
 	second /= 60;
 	ret.hour = (second + 8) % 24;//China time zone.
-	return ret;
-}
-
-T_TIME set_time(T_TIME ret)
-{
-	ASSERT(FALSE);
 	return ret;
 }
 

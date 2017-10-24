@@ -180,23 +180,19 @@ void c_surface::draw_line(int x1, int y1, int x2, int y2, unsigned int rgb, unsi
 		if (dx >= dy)
 		{
 			e = dy - dx / 2;
-			while (x1 <= x2)
+			for(; x1 <= x2; x1++, e += dy)
 			{
 				set_pixel(x1, y1, rgb, z_order);
 				if (e>0) { y1++; e -= dx; }
-				x1++;
-				e += dy;
 			}
 		}
 		else
 		{
 			e = dx - dy / 2;
-			while (y1 <= y2)
+			for(; y1 <= y2; y1++, e += dx)
 			{
 				set_pixel(x1, y1, rgb, z_order);
 				if (e>0) { x1++; e -= dy; }
-				y1++;
-				e += dx;
 			}
 		}
 	}
@@ -207,23 +203,19 @@ void c_surface::draw_line(int x1, int y1, int x2, int y2, unsigned int rgb, unsi
 		if (dx >= dy)
 		{
 			e = dy - dx / 2;
-			while (x1 <= x2)
+			for(; x1 <= x2; x1++, e += dy)
 			{
 				set_pixel(x1, y1, rgb, z_order);
 				if (e>0) { y1--; e -= dx; }
-				x1++;
-				e += dy;
 			}
 		}
 		else
 		{
 			e = dx - dy / 2;
-			while (y1 >= y2)
+			for(; y1 >= y2; y1--, e += dx)
 			{
 				set_pixel(x1, y1, rgb, z_order);
 				if (e>0) { x1++; e -= dy; }
-				y1--;
-				e += dx;
 			}
 		}
 	}
@@ -234,23 +226,19 @@ void c_surface::draw_line(int x1, int y1, int x2, int y2, unsigned int rgb, unsi
 		if (dx >= dy)
 		{
 			e = dy - dx / 2;
-			while (x1 >= x2)
+			for(; x1 >= x2; x1--, e += dy)
 			{
 				set_pixel(x1, y1, rgb, z_order);
 				if (e>0) { y1++; e -= dx; }
-				x1--;
-				e += dy;
 			}
 		}
 		else
 		{
 			e = dx - dy / 2;
-			while (y1 <= y2)
+			for(; y1 <= y2; y1++, e += dx)
 			{
 				set_pixel(x1, y1, rgb, z_order);
 				if (e>0) { x1--; e -= dy; }
-				y1++;
-				e += dx;
 			}
 		}
 	}
@@ -262,23 +250,20 @@ void c_surface::draw_line(int x1, int y1, int x2, int y2, unsigned int rgb, unsi
 		if (dx >= dy)
 		{
 			e = dy - dx / 2;
-			while (x1 >= x2)
+			for(; x1 >= x2; x1--, e += dy)
 			{
 				set_pixel(x1, y1, rgb, z_order);
 				if (e>0) { y1--; e -= dx; }
-				x1--;
-				e += dy;
 			}
 		}
 		else
 		{
 			e = dx - dy / 2;
-			while (y1 >= y2)
+			while (y1-- >= y2)
+			for(; y1 >= y2; y1--, e += dx)
 			{
 				set_pixel(x1, y1, rgb, z_order);
 				if (e>0) { x1--; e -= dy; }
-				y1--;
-				e += dx;
 			}
 		}
 	}

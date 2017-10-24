@@ -155,13 +155,7 @@ void start_real_timer(void (*func)(void* arg))
 	}
 }
 
-long int get_tick()
-{
-	struct tms dummy;
-	return times(&dummy);
-}
-
-unsigned int get_current_task_id()
+unsigned int get_cur_thread_id()
 {
 	return pthread_self();
 }
@@ -204,33 +198,6 @@ T_TIME second_to_day(long second)
 	ret.hour   = fmt->tm_hour;
 	ret.minute = fmt->tm_min;
 	ret.second = fmt->tm_sec;
-	return ret;
-}
-
-T_TIME set_time(T_TIME ret)
-{
-	struct tm fmt;
-	struct timeval time_tv;
-	time_t timep = 0;
-
-	memset(&fmt,0,sizeof(struct tm));
-
-	fmt.tm_year  = ret.year - 1900;
-	fmt.tm_mon   = ret.month - 1;
-	fmt.tm_mday  = ret.day;
-	fmt.tm_hour  = ret.hour;
-	fmt.tm_min   = ret.minute;
-	fmt.tm_sec   = ret.second;
-	fmt.tm_wday  = 0;
-	fmt.tm_yday  = 0;
-	fmt.tm_isdst = 0;
-
-	timep = mktime(&fmt);
-
-	time_tv.tv_sec = timep;
-	time_tv.tv_usec = 0;
-
-	settimeofday(&time_tv, NULL);
 	return ret;
 }
 
