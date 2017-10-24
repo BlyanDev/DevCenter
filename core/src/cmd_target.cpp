@@ -4,17 +4,8 @@
 GLT_MSG_ENTRY c_cmd_target::ms_usr_map_entries[USR_MSG_MAX];
 unsigned short c_cmd_target::ms_user_map_size;
 
-const GLT_MSG_MAP* c_cmd_target::GetMessageMap() const
-{
-	return &(c_cmd_target::mMsgMap);
-}
-const GLT_MSG_MAP c_cmd_target::mMsgMap =
-{
-	0, &(c_cmd_target::mMsgMapEntries[0])
-};
-const GLT_MSG_ENTRY c_cmd_target::mMsgMapEntries[] =
-{
-	GLT_END_MESSAGE_MAP()
+GLT_BEGIN_MESSAGE_MAP(c_cmd_target)
+GLT_END_MESSAGE_MAP()
 
 c_cmd_target::c_cmd_target()
 {
@@ -43,7 +34,7 @@ int c_cmd_target::handle_usr_msg(unsigned int msgId, unsigned int wParam, unsign
 
 void c_cmd_target::load_cmd_msg()
 {
-	const GLT_MSG_ENTRY* p_entry = GetMessageMap()->msgMapEntry;
+	const GLT_MSG_ENTRY* p_entry = GetMSgEntries();
 	if (0 == p_entry)
 	{
 		return;
@@ -94,7 +85,7 @@ void c_cmd_target::load_cmd_msg()
 	}
 }
 
-const GLT_MSG_ENTRY* c_cmd_target::FindMessageMapEntry(const GLT_MSG_ENTRY *pEntry, 
+const GLT_MSG_ENTRY* c_cmd_target::FindMsgEntry(const GLT_MSG_ENTRY *pEntry, 
 	unsigned int msgType, unsigned short msgId, unsigned short ctrlId)
 {
 	if ( MSG_TYPE_INVALID == msgType)

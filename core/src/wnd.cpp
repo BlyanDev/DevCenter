@@ -487,38 +487,31 @@ c_wnd* c_wnd::set_focus(c_wnd * new_active_child)
 
 int c_wnd::on_notify(unsigned short notify_code, unsigned short ctrl_id, long l_param)
 {
-	const GLT_MSG_MAP *msg_map = NULL;
-	const GLT_MSG_ENTRY *entry = NULL;
-
-	for ( msg_map = GetMessageMap(); NULL != msg_map; msg_map = msg_map->baseMsgMap )
+	const GLT_MSG_ENTRY *entry = FindMsgEntry(GetMSgEntries(), MSG_TYPE_WND, notify_code, ctrl_id);
+	if ( NULL != entry )
 	{
-		entry = FindMessageMapEntry(msg_map->msgMapEntry, MSG_TYPE_WND, notify_code, ctrl_id);
+		MSGFUNCS msg_funcs;
+		msg_funcs.func = entry->func;
 
-		if ( NULL != entry )
+		switch ( entry->callbackType)
 		{
-			MSGFUNCS msg_funcs;
-			msg_funcs.func = entry->func;
-
-			switch ( entry->callbackType)
-			{
-			case MSG_CALLBACK_VV:
-				(this->*msg_funcs.func)();
-				break;
-			case MSG_CALLBACK_VVL:
-				(this->*msg_funcs.func_vvl)(l_param);
-				break;
-			case MSG_CALLBACK_VWV:
-				(this->*msg_funcs.func_vwv)(ctrl_id);
-				break;
-			case MSG_CALLBACK_VWL:
-				(this->*msg_funcs.func_vwl)(ctrl_id, l_param);
-				break;
-			default:
-				ASSERT(FALSE);
-				break;
-			}
-			return TRUE;
+		case MSG_CALLBACK_VV:
+			(this->*msg_funcs.func)();
+			break;
+		case MSG_CALLBACK_VVL:
+			(this->*msg_funcs.func_vvl)(l_param);
+			break;
+		case MSG_CALLBACK_VWV:
+			(this->*msg_funcs.func_vwv)(ctrl_id);
+			break;
+		case MSG_CALLBACK_VWL:
+			(this->*msg_funcs.func_vwl)(ctrl_id, l_param);
+			break;
+		default:
+			ASSERT(FALSE);
+			break;
 		}
+		return TRUE;
 	}
 	return FALSE;
 }
