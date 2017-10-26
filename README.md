@@ -48,3 +48,9 @@ run again: `sudo./Noodle.FlipUI.Sample N`
 2. git clean -dxf
 3. cmd: `cmake -D CMAKE_C_COMPILER="/usr/bin/arm-linux-androideabi-gcc" -D CMAKE_CXX_COMPILER="/usr/bin/arm-linux-androideabi-g++" .`
 4. cmd:`make`
+
+#How to build Arm
+1. install toolchain: sudo apt-get install gcc-arm-linux-gnueabi g++-arm-linux-gnueabi
+2. git clean -dxf
+3. cmd: `cmake -D CMAKE_C_COMPILER="/usr/bin/arm-linux-gnueabi-gcc" -D CMAKE_CXX_COMPILER="/usr/bin/arm-linux-gnueabi-g++" .`
+4. cmd:`make`
