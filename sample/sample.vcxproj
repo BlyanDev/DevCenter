@@ -126,6 +126,7 @@
     <ClCompile Include="source\resource\font\Arial_Narrow_9B_12.cpp" />
     <ClCompile Include="source\resource\font\font.cpp" />
     <ClCompile Include="source\resource\font\strings.cpp" />
+    <ClCompile Include="source\start\snake.cpp" />
     <ClCompile Include="source\start\start.cpp" />
     <ClCompile Include="source\start\start_jni.cpp" />
     <ClCompile Include="source\ui_ctrl_ex\ecg_wave_ctrl.cpp" />

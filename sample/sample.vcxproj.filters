@@ -515,5 +515,8 @@
     <ClCompile Include="source\data\database.cpp">
       <Filter>source\data</Filter>
     </ClCompile>
+    <ClCompile Include="source\start\snake.cpp">
+      <Filter>source\start</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
