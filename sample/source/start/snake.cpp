@@ -1,8 +1,7 @@
 ﻿// snake.cpp : Defines the entry point for the console application.
 //
-#include <conio.h>
-#include <stdio.h>
 #include <windows.h>
+#include <stdio.h>
 
 #include "../core_include/api.h"
 #include "../core_include/rect.h"
@@ -16,33 +15,22 @@
 
 #define SCREEN_WIDTH	1024
 #define SCREEN_HEIGHT	768
+#define BG_COLOR		GLT_RGB(0, 0, 0)
 
 static c_slide_root	s_root;
 static c_surface*	s_surface;
 void* s_phy_fb;
 
-static int get_console_size(short *top, short *left, short *bottom, short *right)
+static void get_console_size(short *top, short *left, short *bottom, short *right)
 {
-	*top = 0;
-	*left = 0;
-	*right = 1024;
-	*bottom = 768;
-	return 0;
+	*top = *left = 0;
+	*right = SCREEN_WIDTH - 1;
+	*bottom = SCREEN_HEIGHT - 1;
 }
-
-static int set_cursor_pos(short x, short y)
-{
-	//HANDLE h_console = GetStdHandle(STD_OUTPUT_HANDLE);
-	COORD cursor;
-	cursor.X = x;
-	cursor.Y = y;
-	//SetConsoleCursorPosition(h_console, cursor);
-	return 0;
-}
-
 
 #define MAX_LENGTH			256
 #define INI_SNAKE_LENGTH	10
+#define BODY_BLOCK			20
 #define INVALIDE_POS		0
 enum DIRECTION
 {
@@ -171,14 +159,14 @@ void c_snake::set_direct(enum DIRECTION direct)
 
 static void draw_body(int x, int y, unsigned int rgb)
 {
-	s_surface->fill_rect(x, y, (x + 10), (y + 10), rgb, Z_ORDER_LEVEL_0);
+	s_surface->fill_rect(x, y, (x + BODY_BLOCK), (y + BODY_BLOCK), rgb, Z_ORDER_LEVEL_0);
 }
 
 void c_snake::draw()
 {	//clear foot print
 	if ((INVALIDE_POS != m_x_footprint) && (INVALIDE_POS != m_y_footprint))
 	{
-		draw_body(m_x_footprint, m_y_footprint, GLT_RGB(0, 0, 255));
+		draw_body(m_x_footprint, m_y_footprint, BG_COLOR);
 	}
 
 	//draw body
@@ -192,24 +180,24 @@ void c_snake::draw()
 	{
 		return;
 	}
-	set_cursor_pos(m_x[0], m_y[0]);
+	
 	switch (m_direction)
 	{
 	case RIGHT:
 		printf("<");
-		draw_body(m_x[1], m_y[1], GLT_RGB(0, 255, 0));
+		draw_body(m_x[0], m_y[0], GLT_RGB(0, 255, 0));
 		break;
 	case LEFT:
 		printf(">");
-		draw_body(m_x[1], m_y[1], GLT_RGB(0, 255, 0));
+		draw_body(m_x[0], m_y[0], GLT_RGB(0, 255, 0));
 		break;
 	case UP:
 		printf("v");
-		draw_body(m_x[1], m_y[1], GLT_RGB(0, 255, 0));
+		draw_body(m_x[0], m_y[0], GLT_RGB(0, 255, 0));
 		break;
 	case DOWN:
 		printf("^");
-		draw_body(m_x[1], m_y[1], GLT_RGB(0, 255, 0));
+		draw_body(m_x[0], m_y[0], GLT_RGB(0, 255, 0));
 		break;
 	default:
 		break;
@@ -228,19 +216,19 @@ void c_snake::move()
 
 	if (m_direction == RIGHT)
 	{
-		m_x[0]++;
+		m_x[0] += BODY_BLOCK;
 	}
 	else if (m_direction == DOWN)
 	{
-		m_y[0]++;
+		m_y[0] += BODY_BLOCK;
 	}
 	else if (m_direction == UP)
 	{
-		m_y[0]--;
+		m_y[0] -= BODY_BLOCK;
 	}
 	else if (m_direction == LEFT)
 	{
-		m_x[0]--;
+		m_x[0] -= BODY_BLOCK;
 	}
 }
 
@@ -373,8 +361,7 @@ void c_food::new_food()
 
 void c_food::draw()
 {
-	set_cursor_pos(m_x, m_y);
-	printf("*");
+	draw_body(m_x, m_y, GLT_RGB(255, 255, 0));
 }
 
 class c_wall
@@ -391,30 +378,8 @@ void c_wall::draw()
 {
 	short top, left, bottom, right;
 	get_console_size(&top, &left, &bottom, &right);
-
-	set_cursor_pos(left, top);
-	for (short i = left; i < right; i++)
-	{
-		printf("+");
-	}
-
-	set_cursor_pos(left, top);
-	for (short i = top; i < bottom; i++)
-	{
-		printf("+\n");
-	}
-
-	set_cursor_pos(top, bottom);
-	for (short i = left; i < right; i++)
-	{
-		printf("+");
-	}
-
-	for (short i = top; i < bottom; i++)
-	{
-		set_cursor_pos(right, i);
-		printf("+");
-	}
+	s_surface->draw_rect(top + 1, left + 1, right - 1, bottom - 1, GLT_RGB(255, 0, 0), Z_ORDER_LEVEL_0);
+	s_surface->draw_rect(top + BODY_BLOCK, left + BODY_BLOCK, right - BODY_BLOCK, bottom - BODY_BLOCK, GLT_RGB(255, 0, 0), Z_ORDER_LEVEL_0);
 }
 
 enum GAME_STATUS
@@ -426,9 +391,9 @@ enum GAME_STATUS update_game_status(char *key, unsigned feed_total)
 {	
 	static enum GAME_STATUS s_status = GAME_RUNNING;
 	*key = 0;
-	if (_kbhit())
+	//if (_kbhit())
 	{
-		*key = _getch();
+		//*key = _getch();
 		if (' ' == *key)
 		{
 			s_status = (GAME_PAUSE == s_status) ? GAME_RUNNING : GAME_PAUSE;
@@ -442,10 +407,10 @@ enum GAME_STATUS update_game_status(char *key, unsigned feed_total)
 		s_feed_total = feed_total;
 		short top, left, bottom, right;
 		get_console_size(&top, &left, &bottom, &right);
-		set_cursor_pos(left, top);
+		//set_cursor_pos(left, top);
 		printf("Your score: %d ", 10 * feed_total * c_snake::ms_id);
 
-		set_cursor_pos(left, bottom);
+		//set_cursor_pos(left, bottom);
 		printf("Your score: %d ", 10 * feed_total * c_snake::ms_id);
 	}
 	return s_status;
@@ -481,7 +446,6 @@ void single_game()
 	char key;
 	unsigned int feed_total = 0;
 
-	system("cls");
 	the_wall.draw();
 	while (1)
 	{
@@ -498,8 +462,7 @@ void single_game()
 			the_snake.set_length((the_snake.get_length() + 1));
 			feed_total++;
 		}
-		fflush(stdout);
-
+		
 		if (RUNNING != the_snake.get_status())
 		{
 			return;
@@ -556,7 +519,7 @@ void create_ui()
 	c_display* display = new c_display(s_phy_fb, SCREEN_WIDTH, SCREEN_HEIGHT, 0);
 	s_surface = display->create_surface(&s_root, Z_ORDER_LEVEL_0);
 	s_surface->set_active(true);
-	s_surface->fill_rect(0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1, GLT_RGB(0, 0, 255), Z_ORDER_LEVEL_0);
+	s_surface->fill_rect(0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1, BG_COLOR, Z_ORDER_LEVEL_0);
 }
 
 static int run(int argc)
@@ -569,7 +532,7 @@ static int run(int argc)
 	unsigned int key_cnt = 0;
 	while (true)
 	{
-		char key = _getch();
+		char key = 0;//_getch();
 		switch (key)
 		{
 		case 'a':case 's':case 'd':case 'w'://snake 1
@@ -588,12 +551,12 @@ static int run(int argc)
     return 0;
 }
 
-extern "C" void* get_frame_buffer1(int display_id, int* width, int* height)
+extern "C" void* get_frame_buffer(int display_id, int* width, int* height)
 {
 	return c_display::get_frame_buffer(0, width, height);
 }
 
-extern "C" int run_native1(int main_cnt, int sub_cnt)
+extern "C" int run_native(int main_cnt, int sub_cnt)
 {
 	return run(1);
 }
