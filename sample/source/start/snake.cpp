@@ -13,15 +13,15 @@
 #include "../gui_include/slide_group.h"
 #include "../gui_include/gesture.h"
 
-#define SCREEN_WIDTH	1024
-#define SCREEN_HEIGHT	768
+#define SCREEN_WIDTH	800
+#define SCREEN_HEIGHT	600
 #define BG_COLOR		GLT_RGB(0, 0, 0)
 
 static c_slide_root	s_root;
 static c_surface*	s_surface;
 void* s_phy_fb;
 
-static void get_console_size(short *top, short *left, short *bottom, short *right)
+static void get_window_size(short *top, short *left, short *bottom, short *right)
 {
 	*top = *left = 0;
 	*right = SCREEN_WIDTH - 1;
@@ -32,6 +32,7 @@ static void get_console_size(short *top, short *left, short *bottom, short *righ
 #define INI_SNAKE_LENGTH	10
 #define BODY_BLOCK			20
 #define INVALIDE_POS		0
+
 enum DIRECTION
 {
 	RIGHT,
@@ -40,6 +41,7 @@ enum DIRECTION
 	UP,
 	MAX_DIRECTION
 };
+static DIRECTION s_player_direction = RIGHT;
 
 enum SNAKE_STATUS
 {
@@ -52,7 +54,7 @@ class c_snake
 public:
 	c_snake();
 	~c_snake() { ms_id--; }
-	void run(char key);
+	void run();
 	bool is_be_bitten(short x, short y);
 	void set_status(enum SNAKE_STATUS status) { m_status = status; }
 	enum SNAKE_STATUS get_status() { return m_status; }
@@ -66,7 +68,7 @@ protected:
 	void draw();
 	virtual void move();
 	void set_direct(enum DIRECTION direct);
-	void update_direction(char key);
+	void update_direction();
 
 	enum SNAKE_STATUS m_status;
 	enum DIRECTION m_direction;
@@ -75,7 +77,6 @@ protected:
 	short m_y[MAX_LENGTH];
 	short m_x_footprint;
 	short m_y_footprint;
-	char m_control_code[MAX_DIRECTION];
 	unsigned int m_id;
 };
 
@@ -95,33 +96,16 @@ c_snake::c_snake()
 	m_id = ms_id++;
 	m_status = RUNNING;
 	set_length(INI_SNAKE_LENGTH);
+	
+	short top, left, bottom, right;
+	get_window_size(&top, &left, &bottom, &right);
+	
+	m_direction = RIGHT;
 	memset(m_x, 0, sizeof(m_x));
 	memset(m_y, 0, sizeof(m_y));
+	m_x[0] = left + 1;
+	m_y[0] = (bottom / 2);
 	m_x_footprint = m_y_footprint = INVALIDE_POS;
-
-	short top, left, bottom, right;
-	get_console_size(&top, &left, &bottom, &right);
-
-	if (m_id == 0)
-	{
-		m_direction = RIGHT;
-		m_x[0] = left + 1;
-		m_y[0] = (bottom / 2);
-		m_control_code[RIGHT] = 'd';
-		m_control_code[LEFT] = 'a';
-		m_control_code[UP] = 'w';
-		m_control_code[DOWN] = 's';
-	}
-	else if (m_id == 1)
-	{
-		m_direction = LEFT;
-		m_x[0] = right - 1;
-		m_y[0] = (bottom / 2);
-		m_control_code[RIGHT] = 'l';
-		m_control_code[LEFT] = 'j';
-		m_control_code[UP] = 'i';
-		m_control_code[DOWN] = 'k';
-	}
 }
 
 int c_snake::set_length(unsigned int len)
@@ -232,24 +216,9 @@ void c_snake::move()
 	}
 }
 
-void c_snake::update_direction(char key)
+void c_snake::update_direction()
 {
-	if ((key == m_control_code[LEFT]))
-	{
-		set_direct(LEFT);
-	}
-	else if ((key == m_control_code[RIGHT]))
-	{
-		set_direct(RIGHT);
-	}
-	else if ((key == m_control_code[UP]))
-	{
-		set_direct(UP);
-	}
-	else if ((key == m_control_code[DOWN]))
-	{
-		set_direct(DOWN);
-	}
+	set_direct(s_player_direction);
 }
 
 bool c_snake::is_be_bitten(short x, short y)
@@ -268,7 +237,7 @@ int c_snake::test_crash()
 {
 	//test crash wall
 	short top, left, bottom, right;
-	get_console_size(&top, &left, &bottom, &right);
+	get_window_size(&top, &left, &bottom, &right);
 	if ((m_x[0] >= right) ||
 		(m_x[0] <= left) ||
 		(m_y[0] <= top) ||
@@ -296,9 +265,9 @@ bool c_snake::got_food(unsigned int food_x, unsigned food_y)
 	return false;
 }
 
-void c_snake::run(char key)
+void c_snake::run()
 {
-	update_direction(key);
+	update_direction();
 	move();
 	draw();
 	test_crash();
@@ -308,7 +277,7 @@ void c_super_snake::move()
 {
 	c_snake::move();
 	short top, left, bottom, right;
-	get_console_size(&top, &left, &bottom, &right);
+	get_window_size(&top, &left, &bottom, &right);
 	if (m_x[0] >= right)
 	{
 		m_x[0] = left + 1;
@@ -346,7 +315,7 @@ c_food::c_food()
 void c_food::new_food()
 {
 	short top, left, bottom, right;
-	get_console_size(&top, &left, &bottom, &right);
+	get_window_size(&top, &left, &bottom, &right);
 	m_x = (rand() % (right - left - 1)) + left + 1;
 	if (0 == m_x)
 	{
@@ -377,7 +346,7 @@ private:
 void c_wall::draw()
 {
 	short top, left, bottom, right;
-	get_console_size(&top, &left, &bottom, &right);
+	get_window_size(&top, &left, &bottom, &right);
 	s_surface->draw_rect(top + 1, left + 1, right - 1, bottom - 1, GLT_RGB(255, 0, 0), Z_ORDER_LEVEL_0);
 	s_surface->draw_rect(top + BODY_BLOCK, left + BODY_BLOCK, right - BODY_BLOCK, bottom - BODY_BLOCK, GLT_RGB(255, 0, 0), Z_ORDER_LEVEL_0);
 }
@@ -387,18 +356,13 @@ enum GAME_STATUS
 	GAME_RUNNING,
 	GAME_PAUSE
 };
-enum GAME_STATUS update_game_status(char *key, unsigned feed_total)
+enum GAME_STATUS update_game_status(unsigned feed_total)
 {	
-	static enum GAME_STATUS s_status = GAME_RUNNING;
-	*key = 0;
-	//if (_kbhit())
+	static enum GAME_STATUS s_status = GAME_RUNNING;	
+	//if (' ' == *key)
 	{
-		//*key = _getch();
-		if (' ' == *key)
-		{
-			s_status = (GAME_PAUSE == s_status) ? GAME_RUNNING : GAME_PAUSE;
-			return s_status;
-		}
+		s_status = (GAME_PAUSE == s_status) ? GAME_RUNNING : GAME_PAUSE;
+		return s_status;
 	}
 
 	static unsigned s_feed_total = 0;
@@ -406,7 +370,7 @@ enum GAME_STATUS update_game_status(char *key, unsigned feed_total)
 	{
 		s_feed_total = feed_total;
 		short top, left, bottom, right;
-		get_console_size(&top, &left, &bottom, &right);
+		get_window_size(&top, &left, &bottom, &right);
 		//set_cursor_pos(left, top);
 		printf("Your score: %d ", 10 * feed_total * c_snake::ms_id);
 
@@ -416,45 +380,22 @@ enum GAME_STATUS update_game_status(char *key, unsigned feed_total)
 	return s_status;
 }
 
-void test_bite_each_other(c_snake *snake_1, c_snake *snake_2)
-{
-	if (NULL == snake_1 || NULL == snake_2)
-	{
-		return;
-	}
-	short head_x, head_y;
-	snake_1->get_head_pos(&head_x, &head_y);
-	if (snake_2->is_be_bitten(head_x, head_y))
-	{
-		snake_2->set_status(BITTEN);
-		return;
-	}
-
-	snake_2->get_head_pos(&head_x, &head_y);
-	if (snake_1->is_be_bitten(head_x, head_y))
-	{
-		snake_1->set_status(BITTEN);
-		return;
-	}
-}
-
 void single_game()
 {
 	c_super_snake the_snake;
 	c_food the_food;
 	c_wall the_wall;
-	char key;
 	unsigned int feed_total = 0;
 
 	the_wall.draw();
 	while (1)
 	{
 		Sleep(100);
-		if (GAME_PAUSE == update_game_status(&key, feed_total))
+		if (GAME_PAUSE == update_game_status(feed_total))
 		{
 			continue;
 		}
-		the_snake.run(key);
+		the_snake.run();
 		the_food.draw();
 		if (the_snake.got_food(the_food.m_x, the_food.m_y))
 		{
@@ -470,49 +411,6 @@ void single_game()
 	}
 }
 
-void multi_game()
-{
-	c_super_snake snake_1, snake_2;
-	c_food the_food;
-	c_wall the_wall;
-	char key;
-	unsigned int feed_total = 0;
-	system("cls");
-	the_wall.draw();
-	while (1)
-	{
-		Sleep(100);
-		if (GAME_PAUSE == update_game_status(&key, feed_total))
-		{
-			continue;
-		}
-		snake_1.run(key);
-		snake_2.run(key);
-		test_bite_each_other(&snake_1, &snake_2);
-		the_food.draw();
-		if (snake_1.got_food(the_food.m_x, the_food.m_y))
-		{
-			the_food.new_food();
-			snake_1.set_length((snake_1.get_length() + 1));
-			feed_total++;
-		}
-
-		if (snake_2.got_food(the_food.m_x, the_food.m_y))
-		{
-			the_food.new_food();
-			snake_2.set_length((snake_2.get_length() + 1));
-			feed_total++;
-		}
-		fflush(stdout);
-
-		if ((RUNNING != snake_1.get_status()) ||
-			(RUNNING != snake_2.get_status()))
-		{
-			return;
-		}
-	}
-}
-
 void create_ui()
 {
 	void* s_phy_fb = (void*)malloc(SCREEN_WIDTH * SCREEN_HEIGHT * 2);
@@ -522,33 +420,11 @@ void create_ui()
 	s_surface->fill_rect(0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1, BG_COLOR, Z_ORDER_LEVEL_0);
 }
 
-static int run(int argc)
+extern "C" int run_native(int main_cnt, int sub_cnt)
 {
 	create_ui();
-	//game start
-	(1 == argc) ? single_game() : multi_game();
-
-	//game restart or end
-	unsigned int key_cnt = 0;
-	while (true)
-	{
-		char key = 0;//_getch();
-		switch (key)
-		{
-		case 'a':case 's':case 'd':case 'w'://snake 1
-		case 'i':case 'k':case 'j':case 'l'://snake 2
-			key_cnt++;
-			if (key_cnt > 2)
-			{
-				(1 == argc) ? single_game() : multi_game();
-				key_cnt = 0;
-			}
-			break;
-		default:
-			return 1;
-		}
-	}
-    return 0;
+	single_game();
+	return 0;
 }
 
 extern "C" void* get_frame_buffer(int display_id, int* width, int* height)
@@ -556,7 +432,33 @@ extern "C" void* get_frame_buffer(int display_id, int* width, int* height)
 	return c_display::get_frame_buffer(0, width, height);
 }
 
-extern "C" int run_native(int main_cnt, int sub_cnt)
+extern "C" int send_hid_msg(void* buf, int len, int display_id)
 {
-	return run(1);
+	static MSG_INFO s_press_msg;
+
+	if (len != sizeof(MSG_INFO))
+	{
+		ASSERT(FALSE);
+	}
+
+	MSG_INFO* msg = (MSG_INFO*)buf;
+	if (msg->dwMsgId == 0x4700 && (s_press_msg.dwMsgId == 0))
+	{//presss
+		memcpy(&s_press_msg, msg, sizeof(MSG_INFO));
+	}
+	else if (msg->dwMsgId == 0x4600)
+	{//release
+		int dx = msg->dwParam1 - s_press_msg.dwParam1;
+		int dy = msg->dwParam2 - s_press_msg.dwParam2;
+		if (abs(dx) > abs(dy))
+		{
+			s_player_direction = (dx > 0) ? RIGHT : LEFT;
+		}
+		else
+		{
+			s_player_direction = (dy > 0) ? DOWN : UP;
+		}
+		s_press_msg.dwMsgId = 0;
+	}
+	return 0;
 }
