@@ -1,9 +1,4 @@
-﻿// snake.cpp : Defines the entry point for the console application.
-//
-#include <windows.h>
-#include <stdio.h>
-
-#include "../core_include/api.h"
+﻿#include "../core_include/api.h"
 #include "../core_include/rect.h"
 #include "../core_include/cmd_target.h"
 #include "../core_include/wnd.h"
@@ -12,25 +7,88 @@
 #include "../core_include/display.h"
 #include "../gui_include/slide_group.h"
 #include "../gui_include/gesture.h"
+#include <stdlib.h>
+#include <string.h>
 
-#define SCREEN_WIDTH	800
+#define SCREEN_WIDTH	600
 #define SCREEN_HEIGHT	600
-#define BG_COLOR		GLT_RGB(0, 0, 0)
+#define GRASS_BLOCK		20
+#define WALL_COLOR		GLT_RGB(87, 138, 52)
+#define GRASS_COLOR		GLT_RGB(170, 215, 81)
 
 static c_slide_root	s_root;
 static c_surface*	s_surface;
 void* s_phy_fb;
 
-static void get_window_size(short *top, short *left, short *bottom, short *right)
+static void get_screen_size(short *top, short *left, short *bottom, short *right)
 {
 	*top = *left = 0;
 	*right = SCREEN_WIDTH - 1;
 	*bottom = SCREEN_HEIGHT - 1;
 }
 
+class c_ground
+{
+public:
+	c_ground();
+	~c_ground() {};
+	void draw();
+
+	c_rect m_grass;
+};
+
+c_ground::c_ground()
+{
+	int n_blocks = ((SCREEN_WIDTH < SCREEN_HEIGHT) ? SCREEN_WIDTH : SCREEN_HEIGHT) / GRASS_BLOCK;
+	m_grass.m_top = m_grass.m_left = GRASS_BLOCK;
+	m_grass.m_bottom = m_grass.m_right = GRASS_BLOCK * n_blocks;
+}
+
+void c_ground::draw()
+{
+	s_surface->fill_rect(1, 1, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1, WALL_COLOR, Z_ORDER_LEVEL_0);
+	s_surface->fill_rect(m_grass.m_left, m_grass.m_top, m_grass.m_right - 50, m_grass.m_bottom - 50, GRASS_COLOR, Z_ORDER_LEVEL_0);
+}
+
+static c_ground the_ground;
+
+class c_food
+{
+public:
+	c_food() { m_width = m_height = 10; };
+	~c_food() {};
+	void draw();
+	void new_food();
+
+	int m_x;
+	int m_y;
+	int m_width;
+	int m_height;
+};
+
+void c_food::new_food()
+{
+	m_x = (rand() % (the_ground.m_grass.Width())) + the_ground.m_grass.m_left + 1;
+	if (0 == m_x)
+	{
+		m_x = 1;
+	}
+	m_y = (rand() % (the_ground.m_grass.Height())) + the_ground.m_grass.m_top + 1;
+	if (0 == m_y)
+	{
+		m_y = 1;
+	}
+
+	draw();
+}
+
+void c_food::draw()
+{
+	s_surface->fill_rect(m_x, m_y, (m_x + m_width), (m_y + m_height), GLT_RGB(232, 72, 29), Z_ORDER_LEVEL_0);
+}
+
 #define MAX_LENGTH			256
 #define INI_SNAKE_LENGTH	10
-#define BODY_BLOCK			20
 #define INVALIDE_POS		0
 
 enum DIRECTION
@@ -98,7 +156,7 @@ c_snake::c_snake()
 	set_length(INI_SNAKE_LENGTH);
 	
 	short top, left, bottom, right;
-	get_window_size(&top, &left, &bottom, &right);
+	get_screen_size(&top, &left, &bottom, &right);
 	
 	m_direction = RIGHT;
 	memset(m_x, 0, sizeof(m_x));
@@ -143,20 +201,20 @@ void c_snake::set_direct(enum DIRECTION direct)
 
 static void draw_body(int x, int y, unsigned int rgb)
 {
-	s_surface->fill_rect(x, y, (x + BODY_BLOCK), (y + BODY_BLOCK), rgb, Z_ORDER_LEVEL_0);
+	s_surface->fill_rect(x, y, (x + GRASS_BLOCK), (y + GRASS_BLOCK), rgb, Z_ORDER_LEVEL_0);
 }
 
 void c_snake::draw()
 {	//clear foot print
 	if ((INVALIDE_POS != m_x_footprint) && (INVALIDE_POS != m_y_footprint))
 	{
-		draw_body(m_x_footprint, m_y_footprint, BG_COLOR);
+		draw_body(m_x_footprint, m_y_footprint, GRASS_COLOR);
 	}
 
 	//draw body
 	if (m_length > 1)
 	{
-		draw_body(m_x[1], m_y[1], GLT_RGB(255, 0, 0));
+		draw_body(m_x[1], m_y[1], GLT_RGB(47, 92, 197));
 	}
 
 	//draw head
@@ -164,28 +222,7 @@ void c_snake::draw()
 	{
 		return;
 	}
-	
-	switch (m_direction)
-	{
-	case RIGHT:
-		printf("<");
-		draw_body(m_x[0], m_y[0], GLT_RGB(0, 255, 0));
-		break;
-	case LEFT:
-		printf(">");
-		draw_body(m_x[0], m_y[0], GLT_RGB(0, 255, 0));
-		break;
-	case UP:
-		printf("v");
-		draw_body(m_x[0], m_y[0], GLT_RGB(0, 255, 0));
-		break;
-	case DOWN:
-		printf("^");
-		draw_body(m_x[0], m_y[0], GLT_RGB(0, 255, 0));
-		break;
-	default:
-		break;
-	}
+	draw_body(m_x[0], m_y[0], GLT_RGB(77, 123, 244));
 }
 
 void c_snake::move()
@@ -200,19 +237,19 @@ void c_snake::move()
 
 	if (m_direction == RIGHT)
 	{
-		m_x[0] += BODY_BLOCK;
+		m_x[0] += GRASS_BLOCK;
 	}
 	else if (m_direction == DOWN)
 	{
-		m_y[0] += BODY_BLOCK;
+		m_y[0] += GRASS_BLOCK;
 	}
 	else if (m_direction == UP)
 	{
-		m_y[0] -= BODY_BLOCK;
+		m_y[0] -= GRASS_BLOCK;
 	}
 	else if (m_direction == LEFT)
 	{
-		m_x[0] -= BODY_BLOCK;
+		m_x[0] -= GRASS_BLOCK;
 	}
 }
 
@@ -237,7 +274,7 @@ int c_snake::test_crash()
 {
 	//test crash wall
 	short top, left, bottom, right;
-	get_window_size(&top, &left, &bottom, &right);
+	get_screen_size(&top, &left, &bottom, &right);
 	if ((m_x[0] >= right) ||
 		(m_x[0] <= left) ||
 		(m_y[0] <= top) ||
@@ -258,7 +295,8 @@ int c_snake::test_crash()
 
 bool c_snake::got_food(unsigned int food_x, unsigned food_y)
 {
-	if ((m_x[0] == food_x) && (m_y[0] == food_y))
+	if ((food_x > m_x[0]) && (food_x < m_x[0] + GRASS_BLOCK) &&
+		(food_y > m_y[0]) && (food_y < m_y[0] + GRASS_BLOCK))
 	{
 		return true;
 	}
@@ -277,7 +315,7 @@ void c_super_snake::move()
 {
 	c_snake::move();
 	short top, left, bottom, right;
-	get_window_size(&top, &left, &bottom, &right);
+	get_screen_size(&top, &left, &bottom, &right);
 	if (m_x[0] >= right)
 	{
 		m_x[0] = left + 1;
@@ -294,61 +332,6 @@ void c_super_snake::move()
 	{
 		m_y[0] = top + 1;
 	}
-}
-
-class c_food
-{
-public:
-	c_food();
-	~c_food() {};
-	void draw();
-	void new_food();
-	unsigned int m_x;
-	unsigned int m_y;
-};
-
-c_food::c_food()
-{
-	new_food();
-}
-
-void c_food::new_food()
-{
-	short top, left, bottom, right;
-	get_window_size(&top, &left, &bottom, &right);
-	m_x = (rand() % (right - left - 1)) + left + 1;
-	if (0 == m_x)
-	{
-		m_x = 1;
-	}
-	m_y = (rand() % (bottom - top - 1)) + top + 1;
-	if (0 == m_y)
-	{
-		m_y = 1;
-	}
-}
-
-void c_food::draw()
-{
-	draw_body(m_x, m_y, GLT_RGB(255, 255, 0));
-}
-
-class c_wall
-{
-public:
-	c_wall() {};
-	~c_wall() {};
-	void draw();
-private:
-
-};
-
-void c_wall::draw()
-{
-	short top, left, bottom, right;
-	get_window_size(&top, &left, &bottom, &right);
-	s_surface->draw_rect(top + 1, left + 1, right - 1, bottom - 1, GLT_RGB(255, 0, 0), Z_ORDER_LEVEL_0);
-	s_surface->draw_rect(top + BODY_BLOCK, left + BODY_BLOCK, right - BODY_BLOCK, bottom - BODY_BLOCK, GLT_RGB(255, 0, 0), Z_ORDER_LEVEL_0);
 }
 
 enum GAME_STATUS
@@ -370,12 +353,12 @@ enum GAME_STATUS update_game_status(unsigned feed_total)
 	{
 		s_feed_total = feed_total;
 		short top, left, bottom, right;
-		get_window_size(&top, &left, &bottom, &right);
+		get_screen_size(&top, &left, &bottom, &right);
 		//set_cursor_pos(left, top);
-		printf("Your score: %d ", 10 * feed_total * c_snake::ms_id);
+		//printf("Your score: %d ", 10 * feed_total * c_snake::ms_id);
 
 		//set_cursor_pos(left, bottom);
-		printf("Your score: %d ", 10 * feed_total * c_snake::ms_id);
+		//printf("Your score: %d ", 10 * feed_total * c_snake::ms_id);
 	}
 	return s_status;
 }
@@ -384,20 +367,19 @@ void single_game()
 {
 	c_super_snake the_snake;
 	c_food the_food;
-	c_wall the_wall;
 	unsigned int feed_total = 0;
 
-	the_wall.draw();
+	the_ground.draw();
+	the_food.new_food();
 	while (1)
 	{
-		Sleep(100);
+		thread_sleep(100);
 		if (GAME_PAUSE == update_game_status(feed_total))
 		{
 			continue;
 		}
 		the_snake.run();
-		the_food.draw();
-		if (the_snake.got_food(the_food.m_x, the_food.m_y))
+		if (the_snake.got_food(the_food.m_x + the_food.m_width / 2, the_food.m_y + the_food.m_height / 2))
 		{
 			the_food.new_food();
 			the_snake.set_length((the_snake.get_length() + 1));
@@ -417,7 +399,6 @@ void create_ui()
 	c_display* display = new c_display(s_phy_fb, SCREEN_WIDTH, SCREEN_HEIGHT, 0);
 	s_surface = display->create_surface(&s_root, Z_ORDER_LEVEL_0);
 	s_surface->set_active(true);
-	s_surface->fill_rect(0, 0, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1, BG_COLOR, Z_ORDER_LEVEL_0);
 }
 
 extern "C" int run_native(int main_cnt, int sub_cnt)
