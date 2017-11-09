@@ -12,8 +12,7 @@
 
 #define SCREEN_WIDTH	600
 #define SCREEN_HEIGHT	600
-#define GRASS_BLOCK		20
-#define WALL_COLOR		GLT_RGB(87, 138, 52)
+#define BLOCK_SIZE		20
 #define GRASS_COLOR		GLT_RGB(170, 215, 81)
 
 static c_slide_root	s_root;
@@ -27,69 +26,9 @@ static void get_screen_size(short *top, short *left, short *bottom, short *right
 	*bottom = SCREEN_HEIGHT - 1;
 }
 
-class c_ground
-{
-public:
-	c_ground();
-	~c_ground() {};
-	void draw();
-
-	c_rect m_grass;
-};
-
-c_ground::c_ground()
-{
-	int n_blocks = ((SCREEN_WIDTH < SCREEN_HEIGHT) ? SCREEN_WIDTH : SCREEN_HEIGHT) / GRASS_BLOCK;
-	m_grass.m_top = m_grass.m_left = GRASS_BLOCK;
-	m_grass.m_bottom = m_grass.m_right = GRASS_BLOCK * n_blocks;
-}
-
-void c_ground::draw()
-{
-	s_surface->fill_rect(1, 1, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1, WALL_COLOR, Z_ORDER_LEVEL_0);
-	s_surface->fill_rect(m_grass.m_left, m_grass.m_top, m_grass.m_right - 50, m_grass.m_bottom - 50, GRASS_COLOR, Z_ORDER_LEVEL_0);
-}
-
-static c_ground the_ground;
-
-class c_food
-{
-public:
-	c_food() { m_width = m_height = 10; };
-	~c_food() {};
-	void draw();
-	void new_food();
-
-	int m_x;
-	int m_y;
-	int m_width;
-	int m_height;
-};
-
-void c_food::new_food()
-{
-	m_x = (rand() % (the_ground.m_grass.Width())) + the_ground.m_grass.m_left + 1;
-	if (0 == m_x)
-	{
-		m_x = 1;
-	}
-	m_y = (rand() % (the_ground.m_grass.Height())) + the_ground.m_grass.m_top + 1;
-	if (0 == m_y)
-	{
-		m_y = 1;
-	}
-
-	draw();
-}
-
-void c_food::draw()
-{
-	s_surface->fill_rect(m_x, m_y, (m_x + m_width), (m_y + m_height), GLT_RGB(232, 72, 29), Z_ORDER_LEVEL_0);
-}
-
 #define MAX_LENGTH			256
 #define INI_SNAKE_LENGTH	10
-#define INVALIDE_POS		0
+#define INVALIDE_POS		-1
 
 enum DIRECTION
 {
@@ -101,58 +40,33 @@ enum DIRECTION
 };
 static DIRECTION s_player_direction = RIGHT;
 
-enum SNAKE_STATUS
-{
-	RUNNING,
-	BITTEN,
-	CRASHED
-};
 class c_snake
 {
 public:
 	c_snake();
-	~c_snake() { ms_id--; }
+	~c_snake() {}
 	void run();
 	bool is_be_bitten(short x, short y);
-	void set_status(enum SNAKE_STATUS status) { m_status = status; }
-	enum SNAKE_STATUS get_status() { return m_status; }
-	int test_crash();
 	int set_length(unsigned int len);
 	unsigned int get_length() { return m_length; }
 	bool got_food(unsigned int food_x, unsigned food_y);
 	void get_head_pos(short *x, short *y) { *x = m_x[0]; *y = m_y[0]; }
-	static unsigned int ms_id;
 protected:
 	void draw();
 	virtual void move();
 	void set_direct(enum DIRECTION direct);
 	void update_direction();
 
-	enum SNAKE_STATUS m_status;
 	enum DIRECTION m_direction;
 	unsigned int m_length;
 	short m_x[MAX_LENGTH];
 	short m_y[MAX_LENGTH];
 	short m_x_footprint;
 	short m_y_footprint;
-	unsigned int m_id;
 };
-
-class c_super_snake : public c_snake
-{
-public:
-	c_super_snake() {};
-	~c_super_snake() {};
-protected:
-	virtual void move();
-};
-
-unsigned int c_snake::ms_id;
 
 c_snake::c_snake()
 {
-	m_id = ms_id++;
-	m_status = RUNNING;
 	set_length(INI_SNAKE_LENGTH);
 	
 	short top, left, bottom, right;
@@ -161,7 +75,7 @@ c_snake::c_snake()
 	m_direction = RIGHT;
 	memset(m_x, 0, sizeof(m_x));
 	memset(m_y, 0, sizeof(m_y));
-	m_x[0] = left + 1;
+	m_x[0] = (right / 2);
 	m_y[0] = (bottom / 2);
 	m_x_footprint = m_y_footprint = INVALIDE_POS;
 }
@@ -201,7 +115,7 @@ void c_snake::set_direct(enum DIRECTION direct)
 
 static void draw_body(int x, int y, unsigned int rgb)
 {
-	s_surface->fill_rect(x, y, (x + GRASS_BLOCK), (y + GRASS_BLOCK), rgb, Z_ORDER_LEVEL_0);
+	s_surface->fill_rect(x, y, (x + BLOCK_SIZE), (y + BLOCK_SIZE), rgb, Z_ORDER_LEVEL_0);
 }
 
 void c_snake::draw()
@@ -237,19 +151,38 @@ void c_snake::move()
 
 	if (m_direction == RIGHT)
 	{
-		m_x[0] += GRASS_BLOCK;
+		m_x[0] += BLOCK_SIZE;
 	}
 	else if (m_direction == DOWN)
 	{
-		m_y[0] += GRASS_BLOCK;
+		m_y[0] += BLOCK_SIZE;
 	}
 	else if (m_direction == UP)
 	{
-		m_y[0] -= GRASS_BLOCK;
+		m_y[0] -= BLOCK_SIZE;
 	}
 	else if (m_direction == LEFT)
 	{
-		m_x[0] -= GRASS_BLOCK;
+		m_x[0] -= BLOCK_SIZE;
+	}
+
+	short top, left, bottom, right;
+	get_screen_size(&top, &left, &bottom, &right);
+	if (m_x[0] >= right - BLOCK_SIZE)
+	{
+		m_x[0] = left;
+	}
+	else if (m_x[0] <= left)
+	{
+		m_x[0] = right - BLOCK_SIZE;
+	}
+	else if (m_y[0] <= top)
+	{
+		m_y[0] = bottom - BLOCK_SIZE;
+	}
+	else if(m_y[0] >= bottom - BLOCK_SIZE)
+	{
+		m_y[0] = top;
 	}
 }
 
@@ -270,33 +203,10 @@ bool c_snake::is_be_bitten(short x, short y)
 	return false;
 }
 
-int c_snake::test_crash()
-{
-	//test crash wall
-	short top, left, bottom, right;
-	get_screen_size(&top, &left, &bottom, &right);
-	if ((m_x[0] >= right) ||
-		(m_x[0] <= left) ||
-		(m_y[0] <= top) ||
-		(m_y[0] >= bottom))
-	{
-		m_status = CRASHED;
-		return 1;
-	}
-
-	//test be bitten
-	if (is_be_bitten(m_x[0], m_y[0]))
-	{
-		m_status = BITTEN;
-		return 2;
-	}
-	return 0;
-}
-
 bool c_snake::got_food(unsigned int food_x, unsigned food_y)
 {
-	if ((food_x > m_x[0]) && (food_x < m_x[0] + GRASS_BLOCK) &&
-		(food_y > m_y[0]) && (food_y < m_y[0] + GRASS_BLOCK))
+	if ((food_x > m_x[0]) && (food_x < m_x[0] + BLOCK_SIZE) &&
+		(food_y > m_y[0]) && (food_y < m_y[0] + BLOCK_SIZE))
 	{
 		return true;
 	}
@@ -308,88 +218,15 @@ void c_snake::run()
 	update_direction();
 	move();
 	draw();
-	test_crash();
-}
-
-void c_super_snake::move()
-{
-	c_snake::move();
-	short top, left, bottom, right;
-	get_screen_size(&top, &left, &bottom, &right);
-	if (m_x[0] >= right)
-	{
-		m_x[0] = left + 1;
-	}
-	if (m_x[0] <= left)
-	{
-		m_x[0] = right - 1;
-	}
-	if (m_y[0] <= top)
-	{
-		m_y[0] = bottom - 1;
-	}
-	if (m_y[0] >= bottom)
-	{
-		m_y[0] = top + 1;
-	}
-}
-
-enum GAME_STATUS
-{
-	GAME_RUNNING,
-	GAME_PAUSE
-};
-enum GAME_STATUS update_game_status(unsigned feed_total)
-{	
-	static enum GAME_STATUS s_status = GAME_RUNNING;	
-	//if (' ' == *key)
-	{
-		s_status = (GAME_PAUSE == s_status) ? GAME_RUNNING : GAME_PAUSE;
-		return s_status;
-	}
-
-	static unsigned s_feed_total = 0;
-	if (s_feed_total != feed_total)
-	{
-		s_feed_total = feed_total;
-		short top, left, bottom, right;
-		get_screen_size(&top, &left, &bottom, &right);
-		//set_cursor_pos(left, top);
-		//printf("Your score: %d ", 10 * feed_total * c_snake::ms_id);
-
-		//set_cursor_pos(left, bottom);
-		//printf("Your score: %d ", 10 * feed_total * c_snake::ms_id);
-	}
-	return s_status;
 }
 
 void single_game()
 {
-	c_super_snake the_snake;
-	c_food the_food;
-	unsigned int feed_total = 0;
-
-	the_ground.draw();
-	the_food.new_food();
+	c_snake the_snake;
 	while (1)
 	{
 		thread_sleep(100);
-		if (GAME_PAUSE == update_game_status(feed_total))
-		{
-			continue;
-		}
 		the_snake.run();
-		if (the_snake.got_food(the_food.m_x + the_food.m_width / 2, the_food.m_y + the_food.m_height / 2))
-		{
-			the_food.new_food();
-			the_snake.set_length((the_snake.get_length() + 1));
-			feed_total++;
-		}
-		
-		if (RUNNING != the_snake.get_status())
-		{
-			return;
-		}
 	}
 }
 
@@ -399,6 +236,8 @@ void create_ui()
 	c_display* display = new c_display(s_phy_fb, SCREEN_WIDTH, SCREEN_HEIGHT, 0);
 	s_surface = display->create_surface(&s_root, Z_ORDER_LEVEL_0);
 	s_surface->set_active(true);
+
+	s_surface->fill_rect(1, 1, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1, GRASS_COLOR, Z_ORDER_LEVEL_0);
 }
 
 extern "C" int run_native(int main_cnt, int sub_cnt)
