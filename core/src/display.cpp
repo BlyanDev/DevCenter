@@ -10,10 +10,16 @@
 
 c_display* c_display::ms_displays[MAX_DISPLAY];
 
-c_display::c_display(void* phy_fb, unsigned int width, unsigned int height, unsigned int slides_cnt)
+c_display::c_display(void* phy_fb, unsigned int width, unsigned int height, unsigned int color_bits, unsigned int slides_cnt)
 {
+	if (color_bits != 16 && color_bits != 24 && color_bits != 32) 
+	{
+		ASSERT(FALSE);
+	}
+
 	m_width = width;
 	m_height = height;
+	m_color_bits = color_bits;
 	m_phy_fb = phy_fb;
 	m_hid_pipe = new c_hid_pipe(NULL);
 	for (int i = 0; i < MAX_DISPLAY; i++)

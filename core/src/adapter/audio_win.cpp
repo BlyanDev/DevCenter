@@ -6,6 +6,9 @@
 #include "../../core_include/msg.h"
 #include "../../core_include/audio.h"
 
+#ifndef AUDCLNT_STREAMFLAGS_AUTOCONVERTPCM
+	#define AUDCLNT_STREAMFLAGS_AUTOCONVERTPCM 0x80000000
+#endif
 #define AUDIO_CHANNELS_MONO     1
 #define AUDIO_SAMPLE_RATE       44000
 #define AUDIO_BITS              16
@@ -54,7 +57,7 @@ static int register_wav_resouce(AUDIO_TYPE type, wchar_t* wav_path)
 	{
 		return 0;
 	}
-
+	//void* hFile = CreateFile(wav_path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 	void* hFile = CreateFile2(wav_path, GENERIC_READ, FILE_SHARE_READ, OPEN_EXISTING, NULL);
 	if (INVALID_HANDLE_VALUE == hFile)
 	{

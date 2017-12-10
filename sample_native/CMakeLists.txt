@@ -5,7 +5,7 @@ PROJECT(SampleNative)
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 
 ADD_EXECUTABLE(sample_native
-			main.cpp
+			main.linux.cpp
 			std_io.cpp)
 			
 TARGET_LINK_LIBRARIES(sample_native
