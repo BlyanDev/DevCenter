@@ -5,7 +5,7 @@
 #include <string.h>
 #include <shellapi.h>
 
-extern int run(void** main_fbs, int main_cnt, void** sub_fbs, int sub_cnt);
+extern int run(void** main_fbs, int main_cnt, void** sub_fbs, int sub_cnt, int color_bytes);
 extern void init_std_io(int display_cnt);
 static const char* s_tip_welcome =
 "-------------------------------------------------------------------\n"
@@ -66,7 +66,7 @@ int main(int argc, char** argv)
 	{
 		sub_fbs[i] = calloc(1024 * 370 * 2, 1);
 	}
-	return run(main_fbs, main_cnt, sub_fbs, sub_cnt);	//never return;
+	return run(main_fbs, main_cnt, sub_fbs, sub_cnt, 2);	//never return;
 }
 
 void do_assert(const char* file, int line)

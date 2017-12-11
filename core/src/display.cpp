@@ -115,13 +115,13 @@ int c_display::merge_surface(c_surface* s1, c_surface* s2, int x1, int x2, int y
 	for (int y = y1; y <= y2; y++)
 	{
 		//Left surface
-		char* addr_s = ((char*)(s1->m_fb) + (y * m_width + x1 + offset) * 2);
-		char* addr_d = ((char*)(m_phy_fb) + (y * m_width + x1) * 2);
-		memcpy(addr_d, addr_s, (width - offset) * 2);
+		char* addr_s = ((char*)(s1->m_fb) + (y * m_width + x1 + offset) * m_color_bytes);
+		char* addr_d = ((char*)(m_phy_fb) + (y * m_width + x1) * m_color_bytes);
+		memcpy(addr_d, addr_s, (width - offset) * m_color_bytes);
 		//Right surface
-		addr_s = ((char*)(s2->m_fb) + (y * m_width + x1) * 2);
-		addr_d = ((char*)(m_phy_fb) + (y * m_width + x1 + (width - offset)) * 2);
-		memcpy(addr_d, addr_s, offset * 2);
+		addr_s = ((char*)(s2->m_fb) + (y * m_width + x1) * m_color_bytes);
+		addr_d = ((char*)(m_phy_fb) + (y * m_width + x1 + (width - offset)) * m_color_bytes);
+		memcpy(addr_d, addr_s, offset * m_color_bytes);
 	}
 	return 0;
 }

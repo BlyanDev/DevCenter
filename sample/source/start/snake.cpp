@@ -240,19 +240,20 @@ void create_ui()
 	s_surface->fill_rect(1, 1, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 1, GRASS_COLOR, Z_ORDER_LEVEL_0);
 }
 
-extern "C" int run_native(int main_cnt, int sub_cnt)
+///////////////////////////////////////////////////////////////
+extern "C" int run_native1(int main_cnt, int sub_cnt)
 {
 	create_ui();
 	single_game();
 	return 0;
 }
 
-extern "C" void* get_frame_buffer(int display_id, int* width, int* height)
+extern "C" void* get_frame_buffer1(int display_id, int* width, int* height)
 {
 	return c_display::get_frame_buffer(0, width, height);
 }
 
-extern "C" int send_hid_msg(void* buf, int len, int display_id)
+extern "C" int send_hid_msg1(void* buf, int len, int display_id)
 {
 	static MSG_INFO s_press_msg;
 

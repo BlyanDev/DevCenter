@@ -10,12 +10,12 @@
 #include "../core_include/display.h"
 #include <stdlib.h>
 #include <string.h>
-extern int run(int main_cnt, int sub_cnt);
+extern int run(int main_cnt, int sub_cnt, int color_bytes);
 
 //Android/UWP native interface
-extern "C" int run_native(int main_cnt, int sub_cnt)
+extern "C" int run_native(int main_cnt, int sub_cnt, int color_bytes)
 {
-	return run(main_cnt, sub_cnt);
+	return run(main_cnt, sub_cnt, color_bytes);
 }
 
 extern "C" int send_hid_msg(void* buf, int len, int display_id)

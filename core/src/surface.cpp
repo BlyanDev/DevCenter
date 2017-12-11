@@ -6,6 +6,8 @@
 #include <string.h>
 #include <stdlib.h>
 
+#define GLT_RGB_32_to_16(rgb) (((rgb & 0xFF)>>3) | ((rgb & 0xFC00)>>5) | ((rgb & 0xF80000) >> 8))
+
 c_surface::c_surface(c_display* display, void* phy_fb, unsigned int width, unsigned int height, unsigned int color_bytes)
 {
 	m_width = width;

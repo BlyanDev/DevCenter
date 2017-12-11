@@ -15,10 +15,10 @@ void do_assert(const char* file, int line);
 
 void log_out(const char* log);
 
-unsigned int GLT_RGB(unsigned char r, unsigned char g, unsigned char b);
-unsigned char GLT_RGB_R(unsigned int color);
-unsigned char GLT_RGB_G(unsigned int color);
-unsigned char GLT_RGB_B(unsigned int color);
+#define GLT_RGB(r, g, b) ((r << 16) | (g << 8) | b)
+#define GLT_RGB_R(rgb) ((rgb >> 16) & 0xFF)
+#define GLT_RGB_G(rgb) ((rgb >> 8) & 0xFF)
+#define GLT_RGB_B(rgb) (rgb & 0xFF)
 
 typedef struct _T_TIME
 {
