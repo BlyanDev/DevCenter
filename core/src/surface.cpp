@@ -6,18 +6,19 @@
 #include <string.h>
 #include <stdlib.h>
 
-c_surface::c_surface(c_display* display, void* phy_fb, unsigned int width, unsigned int height)
+c_surface::c_surface(c_display* display, void* phy_fb, unsigned int width, unsigned int height, unsigned int color_bytes)
 {
 	m_width = width;
 	m_height = height;
+	m_color_bytes = color_bytes;
 	m_display = display;
 	m_phy_fb = phy_fb;
 	m_fb = m_usr = NULL;
 	m_top_zorder = m_max_zorder = Z_ORDER_LEVEL_0;
 	m_is_active = false;
 
-	m_fb = calloc(m_width * m_height * 2, 1);
-	m_frame_layers[Z_ORDER_LEVEL_0].rect = c_rect(0,0,m_width,m_height);
+	m_fb = calloc(m_width * m_height * color_bytes, 1);
+	m_frame_layers[Z_ORDER_LEVEL_0].rect = c_rect(0, 0, m_width, m_height);
 }
 
 void c_surface::set_surface(void* wnd_root, Z_ORDER_LEVEL max_z_order)
@@ -26,17 +27,17 @@ void c_surface::set_surface(void* wnd_root, Z_ORDER_LEVEL max_z_order)
 	m_max_zorder = max_z_order;
 	for(int i = 0; i <= m_max_zorder; i++)
 	{
-		m_frame_layers[i].fb = calloc(m_width * m_height * 2, 1);
+		m_frame_layers[i].fb = calloc(m_width * m_height * m_color_bytes, 1);
 		ASSERT(NULL != m_frame_layers[i].fb);
 	}
 }
 
 void c_surface::do_quick_set_pixel(int x, int y, unsigned int rgb)
 {
-	((short*)m_fb)[y * m_width + x] = rgb;
+	(m_color_bytes == 2) ? (((unsigned short*)m_fb)[y * m_width + x] = rgb) : (((unsigned int*)m_fb)[y * m_width + x] = rgb);
 	if(m_is_active)
 	{
-		((short*)m_phy_fb)[y * m_width + x] = rgb;
+		(m_color_bytes == 2) ? (((unsigned short*)m_phy_fb)[y * m_width + x] = rgb) : (((unsigned int*)m_phy_fb)[y * m_width + x] = rgb);
 	}
 }
 
@@ -53,18 +54,39 @@ void c_surface::do_quick_fill_rect(int x0, int y0, int x1, int y1, unsigned int 
 	}
 
 	int x;
-	short *fb, *phy_fb;
-	for(;y0 <= y1; y0++)
+	if (m_color_bytes == 4) 
 	{
-		x = x0;
-		fb = &((short*)m_fb)[y0 * m_width + x];
-		phy_fb = &((short*)m_phy_fb)[y0 * m_width + x];
-		for(; x <= x1; x++)
+		unsigned int *fb, *phy_fb;
+		for (; y0 <= y1; y0++)
 		{
-			*fb++ = rgb;
-			if(m_is_active)
+			x = x0;
+			fb = &((unsigned int*)m_fb)[y0 * m_width + x];
+			phy_fb = &((unsigned int*)m_phy_fb)[y0 * m_width + x];
+			for (; x <= x1; x++)
 			{
-				*phy_fb++ = rgb;
+				*fb++ = rgb;
+				if (m_is_active)
+				{
+					*phy_fb++ = rgb;
+				}
+			}
+		}
+	}
+	else//16 bits
+	{
+		unsigned short *fb, *phy_fb;
+		for (; y0 <= y1; y0++)
+		{
+			x = x0;
+			fb = &((unsigned short*)m_fb)[y0 * m_width + x];
+			phy_fb = &((unsigned short*)m_phy_fb)[y0 * m_width + x];
+			for (; x <= x1; x++)
+			{
+				*fb++ = rgb;
+				if (m_is_active)
+				{
+					*phy_fb++ = rgb;
+				}
 			}
 		}
 	}
@@ -99,7 +121,7 @@ void c_surface::set_pixel(int x, int y, unsigned int rgb, unsigned int z_order)
 		return do_quick_set_pixel(x, y, rgb);
 	}
 
-	((short*)(m_frame_layers[z_order].fb))[x + y * m_width] = rgb;
+	(m_color_bytes == 2) ? (((unsigned short*)(m_frame_layers[z_order].fb))[x + y * m_width] = rgb): (((unsigned int*)(m_frame_layers[z_order].fb))[x + y * m_width] = rgb);
 
 	if(z_order == m_top_zorder)
 	{
@@ -118,11 +140,7 @@ void c_surface::set_pixel(int x, int y, unsigned int rgb, unsigned int z_order)
 
 	if (!is_covered)
 	{
-		((short*)m_fb)[y * m_width + x] = rgb;
-		if(m_is_active)
-		{
-			((short*)m_phy_fb)[y * m_width + x] = rgb;
-		}
+		do_quick_set_pixel(x, y, rgb);
 	}
 }
 
@@ -137,10 +155,10 @@ unsigned int c_surface::get_pixel(int x, int y, unsigned int z_order)
 
 	if (z_order == m_max_zorder)
 	{
-		return ((unsigned short*)m_fb)[y * m_width + x];
+		return (m_color_bytes == 2) ? ((unsigned short*)m_fb)[y * m_width + x]: ((unsigned int*)m_fb)[y * m_width + x];
 	}
 	
-	return ((unsigned short*)(m_frame_layers[z_order].fb))[y * m_width + x];
+	return (m_color_bytes == 2) ? ((unsigned short*)(m_frame_layers[z_order].fb))[y * m_width + x] : ((unsigned int*)(m_frame_layers[z_order].fb))[y * m_width + x];
 }
 
 void c_surface::draw_hline(int x0, int x1, int y, unsigned int rgb, unsigned int z_order)
@@ -286,15 +304,31 @@ void c_surface::fill_rect(int x0, int y0, int x1, int y1, unsigned int rgb, unsi
 
 	if(z_order == m_top_zorder)
 	{
-		int x,y;
-		short *mem_fb;
-		for(y = y0; y <= y1; y++)
+		int x;
+		if (m_color_bytes == 4)
 		{
-			x = x0;
-			mem_fb = &((short*)m_frame_layers[z_order].fb)[y * m_width + x];
-			for(; x <= x1; x++)
+			unsigned int *mem_fb;
+			for (; y0 <= y1; y0++)
 			{
-				*mem_fb++ = rgb;
+				x = x0;
+				mem_fb = &((unsigned int*)m_frame_layers[z_order].fb)[y0 * m_width + x];
+				for (; x <= x1; x++)
+				{
+					*mem_fb++ = rgb;
+				}
+			}
+		}
+		else
+		{
+			unsigned short *mem_fb;
+			for (; y0 <= y1; y0++)
+			{
+				x = x0;
+				mem_fb = &((unsigned short*)m_frame_layers[z_order].fb)[y0 * m_width + x];
+				for (; x <= x1; x++)
+				{
+					*mem_fb++ = rgb;
+				}
 			}
 		}
 		return do_quick_fill_rect(x0, y0, x1, y1, rgb);
@@ -315,13 +349,23 @@ int c_surface::copy_layer_pixel_2_fb(int x, int y, unsigned int z_order)
 		return 0;
 	}
 
-	char* des_addr,* src_addr;
-
-	short rgb = ((short*)(m_frame_layers[z_order].fb))[x + y * m_width];
-	((short*)m_fb)[y * m_width + x] = rgb;
-	if(m_is_active)
+	if (m_color_bytes == 4)
 	{
-		((short*)m_phy_fb)[y * m_width + x] = rgb;
+		unsigned int rgb = ((unsigned int*)(m_frame_layers[z_order].fb))[x + y * m_width];
+		((unsigned int*)m_fb)[y * m_width + x] = rgb;
+		if (m_is_active)
+		{
+			((unsigned int*)m_phy_fb)[y * m_width + x] = rgb;
+		}
+	}
+	else//16 bits
+	{
+		short rgb = ((short*)(m_frame_layers[z_order].fb))[x + y * m_width];
+		((short*)m_fb)[y * m_width + x] = rgb;
+		if (m_is_active)
+		{
+			((short*)m_phy_fb)[y * m_width + x] = rgb;
+		}
 	}
 	return 0;
 }
@@ -425,9 +469,9 @@ int c_surface::flush_scrren(int left, int top, int right, int bottom)
 
 	for (int y = top; y < bottom; y++)
 	{
-		void* s_addr = (char*)m_fb + ((y * m_width + left) * 2);
-		void* d_addr = (char*)m_phy_fb + ((y * m_width + left) * 2);
-		memcpy(d_addr, s_addr, (right - left) * 2);
+		void* s_addr = (char*)m_fb + ((y * m_width + left) * m_color_bytes);
+		void* d_addr = (char*)m_phy_fb + ((y * m_width + left) * m_color_bytes);
+		memcpy(d_addr, s_addr, (right - left) * m_color_bytes);
 	}
 	return 0;
 }

@@ -233,7 +233,7 @@ void single_game()
 void create_ui()
 {
 	void* s_phy_fb = (void*)malloc(SCREEN_WIDTH * SCREEN_HEIGHT * 2);
-	c_display* display = new c_display(s_phy_fb, SCREEN_WIDTH, SCREEN_HEIGHT, 0);
+	c_display* display = new c_display(s_phy_fb, SCREEN_WIDTH, SCREEN_HEIGHT, 2, 0);
 	s_surface = display->create_surface(&s_root, Z_ORDER_LEVEL_0);
 	s_surface->set_active(true);
 

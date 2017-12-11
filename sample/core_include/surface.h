@@ -32,7 +32,7 @@ class c_display;
 class c_surface {
 	friend class c_display;
 public:
-	c_surface(c_display* display, void* phy_fb, unsigned int width, unsigned int height);
+	c_surface(c_display* display, void* phy_fb, unsigned int width, unsigned int height, unsigned int color_bytes);
 
 	void set_pixel(int x, int y, unsigned int rgb, unsigned int z_order);
 	unsigned int get_pixel(int x, int y, unsigned int z_order);
@@ -56,8 +56,9 @@ private:
 	void do_quick_set_pixel(int x,int y,unsigned int rgb);
 	void do_quick_fill_rect(int x0, int y0, int x1, int y1, unsigned int rgb);
 
-	unsigned int			m_width;	//in pixels
-	unsigned int			m_height;	//in pixels
+	unsigned int			m_width;		//in pixels
+	unsigned int			m_height;		//in pixels
+	unsigned int			m_color_bytes;	//16 bits, 32 bits only
 	void* 					m_fb;
 	struct FRAME_LAYER 		m_frame_layers[Z_ORDER_LEVEL_MAX];
 	void*					m_usr;
