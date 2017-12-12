@@ -13,7 +13,7 @@ public:
 					unsigned int surface_width, unsigned int surface_height,
 					unsigned int color_bytes, unsigned int slides_cnt);
 	c_surface* create_surface(void* usr, Z_ORDER_LEVEL max_zorder);
-	int merge_surface(c_surface* s1, c_surface* s2, int x1, int x2, int y1, int y2, int offset);
+	int merge_surface(c_surface* s1, c_surface* s2, int x0, int x1, int y0, int y2, int offset);
 	c_hid_pipe* get_hid_pipe() { return m_hid_pipe; }
 	unsigned int get_width() { return m_width; }
 	unsigned int get_height() { return m_height; }

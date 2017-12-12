@@ -80,50 +80,38 @@ c_surface* c_display::create_surface(void* usr, Z_ORDER_LEVEL max_zorder)
 	return NULL;
 }
 
-int c_display::merge_surface(c_surface* s1, c_surface* s2, int x1, int x2, int y1, int y2, int offset)
+int c_display::merge_surface(c_surface* s1, c_surface* s2, int x0, int x1, int y0, int y1, int offset)
 {
-	if (offset < 0 || offset >= m_width)
-	{
-		ASSERT(FALSE);
-		return -1;
-	}
-	if (y1 < 0 || y1 >= m_height)
-	{
-		ASSERT(FALSE);
-		return -1;
-	}
-	if (y2 < 0 || y2 >= m_height)
-	{
-		ASSERT(FALSE);
-		return -1;
-	}
-	if (x1 < 0 || x1 >= m_width)
-	{
-		ASSERT(FALSE);
-		return -1;
-	}
-	if (x2 < 0 || x2 >= m_width)
+	int surface_width = s1->get_width();
+	int surface_height = s1->get_height();
+
+	if (offset < 0 || offset >= surface_width || y0 < 0 || y0 >= surface_height ||
+		y1 < 0 || y1 >= surface_height || x0 < 0 || x0 >= surface_width || x1 < 0 || x1 >= surface_width)
 	{
 		ASSERT(FALSE);
 		return -1;
 	}
 
-	int width = (x2 - x1 + 1);
-	if (width < 0 || width >= m_width || width < offset)
+	int width = (x1 - x0 + 1);
+	if (width < 0 || width >= surface_width || width < offset)
 	{
 		ASSERT(FALSE);
 		return -1;
 	}
 
-	for (int y = y1; y <= y2; y++)
+	x0 = (x0 >= m_width) ? (m_width - 1) : x0;
+	x1 = (x1 >= m_width) ? (m_width - 1) : x1;
+	y0 = (y0 >= m_height) ? (m_height - 1) : y0;
+	y1 = (y1 >= m_height) ? (m_height - 1) : y1;
+	for (int y = y0; y <= y1; y++)
 	{
 		//Left surface
-		char* addr_s = ((char*)(s1->m_fb) + (y * (s1->get_width()) + x1 + offset) * m_color_bytes);
-		char* addr_d = ((char*)(m_phy_fb) + (y * m_width + x1) * m_color_bytes);
+		char* addr_s = ((char*)(s1->m_fb) + (y * (s1->get_width()) + x0 + offset) * m_color_bytes);
+		char* addr_d = ((char*)(m_phy_fb) + (y * m_width + x0) * m_color_bytes);
 		memcpy(addr_d, addr_s, (width - offset) * m_color_bytes);
 		//Right surface
-		addr_s = ((char*)(s2->m_fb) + (y * (s2->get_width()) + x1) * m_color_bytes);
-		addr_d = ((char*)(m_phy_fb) + (y * m_width + x1 + (width - offset)) * m_color_bytes);
+		addr_s = ((char*)(s2->m_fb) + (y * (s2->get_width()) + x0) * m_color_bytes);
+		addr_d = ((char*)(m_phy_fb) + (y * m_width + x0 + (width - offset)) * m_color_bytes);
 		memcpy(addr_d, addr_s, offset * m_color_bytes);
 	}
 	return 0;

@@ -87,7 +87,10 @@ void c_surface::set_pixel(int x, int y, unsigned int rgb, unsigned int z_order)
 void c_surface::set_pixel_on_fb(int x, int y, unsigned int rgb)
 {
 	((unsigned int*)m_fb)[y * m_width + x] = rgb;
-	if(m_is_active)
+
+	int display_width = m_display->get_width();
+	int display_height = m_display->get_height();
+	if (m_is_active && (x < display_width) && (y < display_height))
 	{
 		((unsigned int*)m_phy_fb)[y * (m_display->get_width()) + x] = rgb;
 	}
@@ -124,12 +127,8 @@ void c_surface::fill_rect(int x0, int y0, int x1, int y1, unsigned int rgb, unsi
 
 void c_surface::fill_rect_on_fb(int x0, int y0, int x1, int y1, unsigned int rgb)
 {
-	if (x0 < 0 || y0 < 0 || x1 < 0 || y1 < 0)
-	{
-		ASSERT(FALSE);
-	}
-
-	if (x0 >= m_width || x1 >= m_width || y0 >= m_height || y1 >= m_height)
+	if (x0 < 0 || y0 < 0 || x1 < 0 || y1 < 0 ||
+		x0 >= m_width || x1 >= m_width || y0 >= m_height || y1 >= m_height)
 	{
 		ASSERT(FALSE);
 	}
@@ -137,6 +136,7 @@ void c_surface::fill_rect_on_fb(int x0, int y0, int x1, int y1, unsigned int rgb
 	int x;
 	unsigned int *fb, *phy_fb;
 	int display_width = m_display->get_width();
+	int display_height = m_display->get_height();
 	for (; y0 <= y1; y0++)
 	{
 		x = x0;
@@ -145,7 +145,7 @@ void c_surface::fill_rect_on_fb(int x0, int y0, int x1, int y1, unsigned int rgb
 		for (; x <= x1; x++)
 		{
 			*fb++ = rgb;
-			if (m_is_active)
+			if (m_is_active && (x < display_width) && (y0 < display_height))
 			{
 				*phy_fb++ = rgb;
 			}
@@ -350,22 +350,25 @@ int c_surface::copy_layer_pixel_2_fb(int x, int y, unsigned int z_order)
 		return 0;
 	}
 
+	int display_width = m_display->get_width();
+	int display_height = m_display->get_height();
+
 	if (m_color_bytes == 4)
 	{
 		unsigned int rgb = ((unsigned int*)(m_frame_layers[z_order].fb))[x + y * m_width];
 		((unsigned int*)m_fb)[y * m_width + x] = rgb;
-		if (m_is_active)
+		if (m_is_active && (x < display_width) && (y < display_height))
 		{
-			((unsigned int*)m_phy_fb)[y * (m_display->get_width()) + x] = rgb;
+			((unsigned int*)m_phy_fb)[y * display_width + x] = rgb;
 		}
 	}
 	else//16 bits
 	{
 		short rgb = ((short*)(m_frame_layers[z_order].fb))[x + y * m_width];
 		((short*)m_fb)[y * m_width + x] = rgb;
-		if (m_is_active)
+		if (m_is_active && (x < display_width) && (y < display_height))
 		{
-			((short*)m_phy_fb)[y * (m_display->get_width()) + x] = rgb;
+			((short*)m_phy_fb)[y * display_width + x] = rgb;
 		}
 	}
 	return 0;
@@ -403,35 +406,25 @@ void c_surface::draw_custom_shape(int l, int t, int r, int b, unsigned int color
 
 int c_surface::flush_scrren(int left, int top, int right, int bottom)
 {
-	if(left < 0 || left >= m_width)
-	{
-		ASSERT(FALSE);
-	}
-	if(right < 0 || right >= m_width)
-	{
-		ASSERT(FALSE);
-	}
-
-	if(top < 0 || top >= m_height)
+	if(left < 0 || left >= m_width || right < 0 || right >= m_width ||
+		top < 0 || top >= m_height || bottom < 0 || bottom >= m_height)
 	{
 		ASSERT(FALSE);
 	}
 
-	if(bottom < 0 || bottom >= m_height)
-	{
-		ASSERT(FALSE);
-	}
-
-	if(!m_is_active)
+	if(!m_is_active || (0 == m_phy_fb) || (0 == m_fb))
 	{
 		return -1;
 	}
-	if((0 == m_phy_fb) || (0 == m_fb))
-	{
-		return -2;
-	}
 
 	int display_width = m_display->get_width();
+	int display_height = m_display->get_height();
+
+	left = (left >= display_width) ? (display_width - 1) : left;
+	right = (right >= display_width) ? (display_width - 1) : right;
+	top = (top >= display_height) ? (display_height - 1) : top;
+	bottom = (bottom >= display_height) ? (display_height - 1) : bottom;
+
 	for (int y = top; y < bottom; y++)
 	{
 		void* s_addr = (char*)m_fb + ((y * m_width + left) * m_color_bytes);
@@ -511,7 +504,10 @@ void c_surface_16bits::set_pixel(int x, int y, unsigned int rgb, unsigned int z_
 void c_surface_16bits::set_pixel_on_fb(int x, int y, unsigned int rgb)
 {
 	((unsigned short*)m_fb)[y * m_width + x] = rgb;
-	if (m_is_active)
+
+	int display_width = m_display->get_width();
+	int display_height = m_display->get_height();
+	if (m_is_active && (x < display_width) && (y < display_height))
 	{
 		((unsigned short*)m_phy_fb)[y * (m_display->get_width()) + x] = rgb;
 	}
@@ -548,12 +544,8 @@ void c_surface_16bits::fill_rect(int x0, int y0, int x1, int y1, unsigned int rg
 
 void c_surface_16bits::fill_rect_on_fb(int x0, int y0, int x1, int y1, unsigned int rgb)
 {
-	if (x0 < 0 || y0 < 0 || x1 < 0 || y1 < 0)
-	{
-		ASSERT(FALSE);
-	}
-
-	if (x0 >= m_width || x1 >= m_width || y0 >= m_height || y1 >= m_height)
+	if (x0 < 0 || y0 < 0 || x1 < 0 || y1 < 0 ||
+		x0 >= m_width || x1 >= m_width || y0 >= m_height || y1 >= m_height)
 	{
 		ASSERT(FALSE);
 	}
@@ -561,6 +553,7 @@ void c_surface_16bits::fill_rect_on_fb(int x0, int y0, int x1, int y1, unsigned 
 	int x;
 	unsigned short *fb, *phy_fb;
 	int display_width = m_display->get_width();
+	int display_height = m_display->get_height();
 	for (; y0 <= y1; y0++)
 	{
 		x = x0;
@@ -569,7 +562,7 @@ void c_surface_16bits::fill_rect_on_fb(int x0, int y0, int x1, int y1, unsigned 
 		for (; x <= x1; x++)
 		{
 			*fb++ = rgb;
-			if (m_is_active)
+			if (m_is_active && (x < display_width) && (y0 < display_height))
 			{
 				*phy_fb++ = rgb;
 			}

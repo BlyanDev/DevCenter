@@ -30,7 +30,7 @@ int main(int argc, char** argv)
 
 	int main_cnt = 1;
 	int sub_cnt = 0;
-	int color_bytes = 4;
+	int color_bytes = 2;
 	int main_screen_width = 1024;
 	int main_screen_height = 768;
 	int sub_screen_width = 1024;
