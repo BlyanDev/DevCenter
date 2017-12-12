@@ -6,8 +6,6 @@
 #include <string.h>
 #include <stdlib.h>
 
-#define GLT_RGB_32_to_16(rgb) (((rgb & 0xFF)>>3) | ((rgb & 0xFC00)>>5) | ((rgb & 0xF80000) >> 8))
-
 c_surface::c_surface(c_display* display, void* phy_fb, unsigned int width, unsigned int height, unsigned int color_bytes)
 {
 	m_width = width;
@@ -34,16 +32,96 @@ void c_surface::set_surface(void* wnd_root, Z_ORDER_LEVEL max_z_order)
 	}
 }
 
-void c_surface::do_quick_set_pixel(int x, int y, unsigned int rgb)
+void c_surface::set_pixel(int x, int y, unsigned int rgb, unsigned int z_order)
 {
-	(m_color_bytes == 2) ? (((unsigned short*)m_fb)[y * m_width + x] = rgb) : (((unsigned int*)m_fb)[y * m_width + x] = rgb);
-	if(m_is_active)
+	if (x >= m_width || y >= m_height || x < 0 || y < 0)
 	{
-		(m_color_bytes == 2) ? (((unsigned short*)m_phy_fb)[y * m_width + x] = rgb) : (((unsigned int*)m_phy_fb)[y * m_width + x] = rgb);
+		return;
+	}
+	if (z_order > m_max_zorder)
+	{
+		ASSERT(FALSE);
+		return;
+	}
+
+	if (z_order > m_top_zorder)
+	{
+		m_top_zorder = (Z_ORDER_LEVEL)z_order;
+	}
+
+	if (0 == m_frame_layers[z_order].rect.PtInRect(x, y))
+	{
+		ASSERT(FALSE);
+		return;
+	}
+
+	if (z_order == m_max_zorder)
+	{
+		return set_pixel_on_fb(x, y, rgb);
+	}
+
+	((unsigned int*)(m_frame_layers[z_order].fb))[x + y * m_width] = rgb;
+
+	if (z_order == m_top_zorder)
+	{
+		return set_pixel_on_fb(x, y, rgb);
+	}
+
+	bool is_covered = false;
+	for (int tmp_z_order = Z_ORDER_LEVEL_MAX - 1; tmp_z_order > z_order; tmp_z_order--)
+	{
+		if (1 == m_frame_layers[tmp_z_order].rect.PtInRect(x, y))
+		{
+			is_covered = true;
+			break;
+		}
+	}
+
+	if (!is_covered)
+	{
+		set_pixel_on_fb(x, y, rgb);
 	}
 }
 
-void c_surface::do_quick_fill_rect(int x0, int y0, int x1, int y1, unsigned int rgb)
+void c_surface::set_pixel_on_fb(int x, int y, unsigned int rgb)
+{
+	((unsigned int*)m_fb)[y * m_width + x] = rgb;
+	if(m_is_active)
+	{
+		((unsigned int*)m_phy_fb)[y * m_width + x] = rgb;
+	}
+}
+
+void c_surface::fill_rect(int x0, int y0, int x1, int y1, unsigned int rgb, unsigned int z_order)
+{
+	if (z_order == m_max_zorder)
+	{
+		return fill_rect_on_fb(x0, y0, x1, y1, rgb);
+	}
+
+	if (z_order == m_top_zorder)
+	{
+		int x, y;
+		unsigned int *mem_fb;
+		for (y = y0; y <= y1; y++)
+		{
+			x = x0;
+			mem_fb = &((unsigned int*)m_frame_layers[z_order].fb)[y * m_width + x];
+			for (; x <= x1; x++)
+			{
+				*mem_fb++ = rgb;
+			}
+		}
+		return fill_rect_on_fb(x0, y0, x1, y1, rgb);
+	}
+
+	for (; y0 <= y1; y0++)
+	{
+		draw_hline(x0, x1, y0, rgb, z_order);
+	}
+}
+
+void c_surface::fill_rect_on_fb(int x0, int y0, int x1, int y1, unsigned int rgb)
 {
 	if (x0 < 0 || y0 < 0 || x1 < 0 || y1 < 0)
 	{
@@ -56,93 +134,20 @@ void c_surface::do_quick_fill_rect(int x0, int y0, int x1, int y1, unsigned int 
 	}
 
 	int x;
-	if (m_color_bytes == 4) 
+	unsigned int *fb, *phy_fb;
+	for (; y0 <= y1; y0++)
 	{
-		unsigned int *fb, *phy_fb;
-		for (; y0 <= y1; y0++)
+		x = x0;
+		fb = &((unsigned int*)m_fb)[y0 * m_width + x];
+		phy_fb = &((unsigned int*)m_phy_fb)[y0 * m_width + x];
+		for (; x <= x1; x++)
 		{
-			x = x0;
-			fb = &((unsigned int*)m_fb)[y0 * m_width + x];
-			phy_fb = &((unsigned int*)m_phy_fb)[y0 * m_width + x];
-			for (; x <= x1; x++)
+			*fb++ = rgb;
+			if (m_is_active)
 			{
-				*fb++ = rgb;
-				if (m_is_active)
-				{
-					*phy_fb++ = rgb;
-				}
+				*phy_fb++ = rgb;
 			}
 		}
-	}
-	else//16 bits
-	{
-		unsigned short *fb, *phy_fb;
-		for (; y0 <= y1; y0++)
-		{
-			x = x0;
-			fb = &((unsigned short*)m_fb)[y0 * m_width + x];
-			phy_fb = &((unsigned short*)m_phy_fb)[y0 * m_width + x];
-			for (; x <= x1; x++)
-			{
-				*fb++ = rgb;
-				if (m_is_active)
-				{
-					*phy_fb++ = rgb;
-				}
-			}
-		}
-	}
-}
-
-void c_surface::set_pixel(int x, int y, unsigned int rgb, unsigned int z_order)
-{
-	if ( x >= m_width || y >= m_height || x < 0 || y < 0)
-	{
-		return;
-	}
-
-	if (z_order > m_max_zorder)
-	{
-		ASSERT(FALSE);
-		return;
-	}
-
-	if(z_order > m_top_zorder)
-	{
-		m_top_zorder = (Z_ORDER_LEVEL)z_order;
-	}
-
-	if(0 == m_frame_layers[z_order].rect.PtInRect(x, y))
-	{
-		ASSERT(FALSE);
-		return;
-	}
-
-	if (z_order == m_max_zorder)
-	{
-		return do_quick_set_pixel(x, y, rgb);
-	}
-
-	(m_color_bytes == 2) ? (((unsigned short*)(m_frame_layers[z_order].fb))[x + y * m_width] = rgb): (((unsigned int*)(m_frame_layers[z_order].fb))[x + y * m_width] = rgb);
-
-	if(z_order == m_top_zorder)
-	{
-		return do_quick_set_pixel(x, y, rgb);
-	}
-
-	bool is_covered = false;
-	for (int tmp_z_order = Z_ORDER_LEVEL_MAX - 1; tmp_z_order > z_order; tmp_z_order--)
-	{
-		if(1 == m_frame_layers[tmp_z_order].rect.PtInRect(x, y))
-		{
-			is_covered = true;
-			break;
-		}
-	}
-
-	if (!is_covered)
-	{
-		do_quick_set_pixel(x, y, rgb);
 	}
 }
 
@@ -157,10 +162,10 @@ unsigned int c_surface::get_pixel(int x, int y, unsigned int z_order)
 
 	if (z_order == m_max_zorder)
 	{
-		return (m_color_bytes == 2) ? ((unsigned short*)m_fb)[y * m_width + x]: ((unsigned int*)m_fb)[y * m_width + x];
+		return ((unsigned int*)m_fb)[y * m_width + x];
 	}
 	
-	return (m_color_bytes == 2) ? ((unsigned short*)(m_frame_layers[z_order].fb))[y * m_width + x] : ((unsigned int*)(m_frame_layers[z_order].fb))[y * m_width + x];
+	return ((unsigned int*)(m_frame_layers[z_order].fb))[y * m_width + x];
 }
 
 void c_surface::draw_hline(int x0, int x1, int y, unsigned int rgb, unsigned int z_order)
@@ -297,81 +302,6 @@ void c_surface::draw_rect(int x0, int y0, int x1, int y1, unsigned int rgb, unsi
 	draw_vline(x1, y0, y1, rgb, z_order);
 }
 
-void c_surface::fill_rect(int x0, int y0, int x1, int y1, unsigned int rgb, unsigned int z_order)
-{
-	if (z_order == m_max_zorder)
-	{
-		return do_quick_fill_rect(x0, y0, x1, y1, rgb);
-	}
-
-	if(z_order == m_top_zorder)
-	{
-		int x;
-		if (m_color_bytes == 4)
-		{
-			unsigned int *mem_fb;
-			for (; y0 <= y1; y0++)
-			{
-				x = x0;
-				mem_fb = &((unsigned int*)m_frame_layers[z_order].fb)[y0 * m_width + x];
-				for (; x <= x1; x++)
-				{
-					*mem_fb++ = rgb;
-				}
-			}
-		}
-		else
-		{
-			unsigned short *mem_fb;
-			for (; y0 <= y1; y0++)
-			{
-				x = x0;
-				mem_fb = &((unsigned short*)m_frame_layers[z_order].fb)[y0 * m_width + x];
-				for (; x <= x1; x++)
-				{
-					*mem_fb++ = rgb;
-				}
-			}
-		}
-		return do_quick_fill_rect(x0, y0, x1, y1, rgb);
-	}
-
-	for (; y0 <= y1; y0++) 
-	{
-		draw_hline(x0, x1, y0, rgb, z_order);
-	}
-}
-
-int c_surface::copy_layer_pixel_2_fb(int x, int y, unsigned int z_order)
-{
-	if (x >= m_width || y >= m_height || x < 0 || y < 0 ||
-				z_order >= Z_ORDER_LEVEL_MAX)
-	{
-		ASSERT(FALSE);
-		return 0;
-	}
-
-	if (m_color_bytes == 4)
-	{
-		unsigned int rgb = ((unsigned int*)(m_frame_layers[z_order].fb))[x + y * m_width];
-		((unsigned int*)m_fb)[y * m_width + x] = rgb;
-		if (m_is_active)
-		{
-			((unsigned int*)m_phy_fb)[y * m_width + x] = rgb;
-		}
-	}
-	else//16 bits
-	{
-		short rgb = ((short*)(m_frame_layers[z_order].fb))[x + y * m_width];
-		((short*)m_fb)[y * m_width + x] = rgb;
-		if (m_is_active)
-		{
-			((short*)m_phy_fb)[y * m_width + x] = rgb;
-		}
-	}
-	return 0;
-}
-
 int c_surface::set_frame_layer(c_rect& rect, unsigned int z_order)
 {
 	if (z_order <= Z_ORDER_LEVEL_0 || z_order >= Z_ORDER_LEVEL_MAX)
@@ -407,6 +337,36 @@ int c_surface::set_frame_layer(c_rect& rect, unsigned int z_order)
 	}
 	m_frame_layers[z_order].rect = rect;
 	return 1;
+}
+
+int c_surface::copy_layer_pixel_2_fb(int x, int y, unsigned int z_order)
+{
+	if (x >= m_width || y >= m_height || x < 0 || y < 0 ||
+		z_order >= Z_ORDER_LEVEL_MAX)
+	{
+		ASSERT(FALSE);
+		return 0;
+	}
+
+	if (m_color_bytes == 4)
+	{
+		unsigned int rgb = ((unsigned int*)(m_frame_layers[z_order].fb))[x + y * m_width];
+		((unsigned int*)m_fb)[y * m_width + x] = rgb;
+		if (m_is_active)
+		{
+			((unsigned int*)m_phy_fb)[y * m_width + x] = rgb;
+		}
+	}
+	else//16 bits
+	{
+		short rgb = ((short*)(m_frame_layers[z_order].fb))[x + y * m_width];
+		((short*)m_fb)[y * m_width + x] = rgb;
+		if (m_is_active)
+		{
+			((short*)m_phy_fb)[y * m_width + x] = rgb;
+		}
+	}
+	return 0;
 }
 
 void c_surface::draw_custom_shape(int l, int t, int r, int b, unsigned int color, const CUSTOM_SHAPE pRgn[], int z_order)
@@ -490,4 +450,142 @@ bool c_surface::is_valid(c_rect rect)
 		return false;
 	}
 	return true;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////
+void c_surface_16bits::set_pixel(int x, int y, unsigned int rgb, unsigned int z_order)
+{
+	if (x >= m_width || y >= m_height || x < 0 || y < 0)
+	{
+		return;
+	}
+	if (z_order > m_max_zorder)
+	{
+		ASSERT(FALSE);
+		return;
+	}
+
+	if (z_order > m_top_zorder)
+	{
+		m_top_zorder = (Z_ORDER_LEVEL)z_order;
+	}
+
+	if (0 == m_frame_layers[z_order].rect.PtInRect(x, y))
+	{
+		ASSERT(FALSE);
+		return;
+	}
+
+	rgb = GLT_RGB_32_to_16(rgb);
+	if (z_order == m_max_zorder)
+	{
+		return set_pixel_on_fb(x, y, rgb);
+	}
+
+	((unsigned short*)(m_frame_layers[z_order].fb))[x + y * m_width] = rgb;
+
+	if (z_order == m_top_zorder)
+	{
+		return set_pixel_on_fb(x, y, rgb);
+	}
+
+	bool is_covered = false;
+	for (int tmp_z_order = Z_ORDER_LEVEL_MAX - 1; tmp_z_order > z_order; tmp_z_order--)
+	{
+		if (1 == m_frame_layers[tmp_z_order].rect.PtInRect(x, y))
+		{
+			is_covered = true;
+			break;
+		}
+	}
+
+	if (!is_covered)
+	{
+		set_pixel_on_fb(x, y, rgb);
+	}
+}
+
+void c_surface_16bits::set_pixel_on_fb(int x, int y, unsigned int rgb)
+{
+	((unsigned short*)m_fb)[y * m_width + x] = rgb;
+	if (m_is_active)
+	{
+		((unsigned short*)m_phy_fb)[y * m_width + x] = rgb;
+	}
+}
+
+void c_surface_16bits::fill_rect(int x0, int y0, int x1, int y1, unsigned int rgb, unsigned int z_order)
+{
+	rgb = GLT_RGB_32_to_16(rgb);
+	if (z_order == m_max_zorder)
+	{
+		return fill_rect_on_fb(x0, y0, x1, y1, rgb);
+	}
+	if (z_order == m_top_zorder)
+	{
+		int x, y;
+		unsigned short *mem_fb;
+		for (y = y0; y <= y1; y++)
+		{
+			x = x0;
+			mem_fb = &((unsigned short*)m_frame_layers[z_order].fb)[y * m_width + x];
+			for (; x <= x1; x++)
+			{
+				*mem_fb++ = rgb;
+			}
+		}
+		return fill_rect_on_fb(x0, y0, x1, y1, rgb);
+	}
+
+	for (; y0 <= y1; y0++)
+	{
+		draw_hline(x0, x1, y0, rgb, z_order);
+	}
+}
+
+void c_surface_16bits::fill_rect_on_fb(int x0, int y0, int x1, int y1, unsigned int rgb)
+{
+	if (x0 < 0 || y0 < 0 || x1 < 0 || y1 < 0)
+	{
+		ASSERT(FALSE);
+	}
+
+	if (x0 >= m_width || x1 >= m_width || y0 >= m_height || y1 >= m_height)
+	{
+		ASSERT(FALSE);
+	}
+
+	int x;
+	unsigned short *fb, *phy_fb;
+	for (; y0 <= y1; y0++)
+	{
+		x = x0;
+		fb = &((unsigned short*)m_fb)[y0 * m_width + x];
+		phy_fb = &((unsigned short*)m_phy_fb)[y0 * m_width + x];
+		for (; x <= x1; x++)
+		{
+			*fb++ = rgb;
+			if (m_is_active)
+			{
+				*phy_fb++ = rgb;
+			}
+		}
+	}
+}
+
+unsigned int c_surface_16bits::get_pixel(int x, int y, unsigned int z_order)
+{
+	if (x >= m_width || y >= m_height || x < 0 || y < 0 ||
+		z_order >= Z_ORDER_LEVEL_MAX)
+	{
+		ASSERT(FALSE);
+		return 0;
+	}
+
+	if (z_order == m_max_zorder)
+	{
+		return GLT_RGB_16_to_32(((unsigned short*)m_fb)[y * m_width + x]);
+	}
+
+	return GLT_RGB_16_to_32(((unsigned short*)(m_frame_layers[z_order].fb))[y * m_width + x]);
 }

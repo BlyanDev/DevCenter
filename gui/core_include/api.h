@@ -19,6 +19,8 @@ void log_out(const char* log);
 #define GLT_RGB_R(rgb) ((rgb >> 16) & 0xFF)
 #define GLT_RGB_G(rgb) ((rgb >> 8) & 0xFF)
 #define GLT_RGB_B(rgb) (rgb & 0xFF)
+#define GLT_RGB_32_to_16(rgb) (((rgb & 0xFF) >> 3) | ((rgb & 0xFC00) >> 5) | ((rgb & 0xF80000) >> 8))
+#define GLT_RGB_16_to_32(rgb) (((rgb & 0x1F) << 3) | ((rgb & 0x7E0) << 5) | ((rgb & 0xF800) << 8))
 
 typedef struct _T_TIME
 {

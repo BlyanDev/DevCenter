@@ -40,7 +40,8 @@ c_display::c_display(void* phy_fb, unsigned int width, unsigned int height, unsi
 	memset(m_surface_group, 0, sizeof(m_surface_group));
 	for (int i = 0; i < m_surface_cnt; i++)
 	{
-		m_surface_group[i] = new c_surface(this, m_phy_fb, width, height, color_bytes);
+		m_surface_group[i] = (color_bytes == 4) ? new c_surface(this, m_phy_fb, width, height, color_bytes) :
+												  new c_surface_16bits(this, m_phy_fb, width, height, color_bytes);
 	}
 }
 
