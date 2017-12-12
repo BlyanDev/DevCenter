@@ -230,10 +230,10 @@ void single_game()
 	}
 }
 
-void create_ui()
+void create_ui(int display_width, int display_height)
 {
 	void* s_phy_fb = (void*)malloc(SCREEN_WIDTH * SCREEN_HEIGHT * 2);
-	c_display* display = new c_display(s_phy_fb, SCREEN_WIDTH, SCREEN_HEIGHT, 2, 0);
+	c_display* display = new c_display(s_phy_fb, display_width, display_height, SCREEN_WIDTH, SCREEN_HEIGHT, 2, 0);
 	s_surface = display->create_surface(&s_root, Z_ORDER_LEVEL_0);
 	s_surface->set_active(true);
 
@@ -241,9 +241,9 @@ void create_ui()
 }
 
 ///////////////////////////////////////////////////////////////
-extern "C" int run_native1(int main_cnt, int sub_cnt)
+extern "C" int run_native(int main_cnt, int main_width, int main_height, int sub_cnt, int sub_width, int sub_height, int color_bytes)
 {
-	create_ui();
+	create_ui(main_width, main_height);
 	single_game();
 	return 0;
 }
