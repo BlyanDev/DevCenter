@@ -17,7 +17,7 @@ c_surface::c_surface(c_display* display, void* phy_fb, unsigned int width, unsig
 	m_top_zorder = m_max_zorder = Z_ORDER_LEVEL_0;
 	m_is_active = false;
 
-	m_fb = calloc(m_width * m_height * color_bytes, 1);
+	m_fb = calloc(m_width * m_height, color_bytes);
 	m_frame_layers[Z_ORDER_LEVEL_0].rect = c_rect(0, 0, m_width, m_height);
 }
 
@@ -27,7 +27,7 @@ void c_surface::set_surface(void* wnd_root, Z_ORDER_LEVEL max_z_order)
 	m_max_zorder = max_z_order;
 	for(int i = 0; i <= m_max_zorder; i++)
 	{
-		m_frame_layers[i].fb = calloc(m_width * m_height * m_color_bytes, 1);
+		m_frame_layers[i].fb = calloc(m_width * m_height, m_color_bytes);
 		ASSERT(NULL != m_frame_layers[i].fb);
 	}
 }

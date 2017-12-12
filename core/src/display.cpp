@@ -165,5 +165,24 @@ int c_display::snap_shot(unsigned int display_id)
 
 	unsigned int width = ms_displays[display_id]->get_width();
 	unsigned int height = ms_displays[display_id]->get_height();
-	return build_bmp(path, width, height, (unsigned char*)ms_displays[display_id]->m_phy_fb);
+
+	//16 bits framebuffer
+	if (ms_displays[display_id]->m_color_bytes == 2)
+	{
+		return build_bmp(path, width, height, (unsigned char*)ms_displays[display_id]->m_phy_fb);
+	}
+
+	//32 bits framebuffer
+	unsigned short* p_bmp565_data = new unsigned short[width * height];
+	unsigned int* p_raw_data = (unsigned int*)ms_displays[display_id]->m_phy_fb;
+
+	for (int i = 0; i < width * height; i++)
+	{
+		unsigned int rgb = *p_raw_data++;
+		p_bmp565_data[i] = GLT_RGB_32_to_16(rgb);
+	}
+
+	int ret = build_bmp(path, width, height, (unsigned char*)p_bmp565_data);
+	delete []p_bmp565_data;
+	return ret;
 }
