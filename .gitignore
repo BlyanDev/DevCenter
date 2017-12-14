@@ -12,9 +12,6 @@ CMakeCache.txt
 CMakeFiles
 cmake_install.cmake
 Makefile
-bin
-core/libcore.a
-gui/libgui.a
 
 #For Visual studio
 .vs
@@ -39,3 +36,7 @@ sample/source/*.a
 #For output
 *.bmp
 dump.txt
+/libcore.a
+/libgui.a
+/libsample.a
+/sample_native/sample_native

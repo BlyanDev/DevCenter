@@ -2,8 +2,6 @@ cmake_minimum_required(VERSION 2.8)
 
 PROJECT(SampleNative)
 
-SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
-
 ADD_EXECUTABLE(sample_native
 			main.linux.cpp
 			std_io.cpp)
