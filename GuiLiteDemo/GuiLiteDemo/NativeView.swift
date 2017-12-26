@@ -20,9 +20,17 @@ class NativeView: NSView {
         NSRectFill(dirtyRect)
     }
     
+    override func mouseUp(with event: NSEvent) {
+        self.needsDisplay = true
+    }
+    
+    override func mouseDown(with event: NSEvent) {
+        
+    }
+    
     func buildImage(imgWidth: Int, imgHeight: Int) -> NSImage?{
-        let cf_data = getPixels(imgWidth: imgWidth, imgHeight: imgHeight)
-        let providerRef = CGDataProvider(data: cf_data!)
+        let pixData = getPixels(imgWidth: imgWidth, imgHeight: imgHeight)
+        let providerRef = CGDataProvider(data: pixData!)
         let cgimg = CGImage.init(width: imgWidth, height: imgHeight, bitsPerComponent: 8, bitsPerPixel: 32, bytesPerRow: imgWidth*4, space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGBitmapInfo.byteOrder32Big, provider: providerRef!, decode: nil, shouldInterpolate: true, intent: .defaultIntent)
         
         return NSImage(cgImage: cgimg!, size: CGSize(width: imgWidth, height: imgHeight))
