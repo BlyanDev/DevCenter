@@ -13,6 +13,8 @@ class ViewController: NSViewController {
         super.viewDidLoad()
 
         // Do any additional setup after loading the view.
+        Thread.detachNewThreadSelector(#selector(ViewController.run_native), toTarget: self, with: nil)
+        
         let frame = CGRect(x: 0, y: 0, width: 1024, height: 768)
         let native_view = NativeView(frame: frame)
         view.addSubview(native_view)
@@ -22,5 +24,10 @@ class ViewController: NSViewController {
         didSet {
         // Update the view, if already loaded.
         }
+    }
+    
+    func run_native()
+    {
+        run_host_monitor();
     }
 }

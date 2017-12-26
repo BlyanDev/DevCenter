@@ -7,17 +7,19 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		F44071901FEE574E00040835 /* flip.png in Resources */ = {isa = PBXBuildFile; fileRef = F440718F1FEE574E00040835 /* flip.png */; };
 		F47C125D1FEBDD3F005D635A /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F47C125C1FEBDD3F005D635A /* AppDelegate.swift */; };
 		F47C125F1FEBDD3F005D635A /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F47C125E1FEBDD3F005D635A /* ViewController.swift */; };
 		F47C12611FEBDD3F005D635A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F47C12601FEBDD3F005D635A /* Assets.xcassets */; };
 		F47C12641FEBDD3F005D635A /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F47C12621FEBDD3F005D635A /* Main.storyboard */; };
 		F47C126D1FEBDD84005D635A /* NativeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F47C126C1FEBDD84005D635A /* NativeView.swift */; };
 		F47C126F1FEBDDFD005D635A /* NativeView.xib in Resources */ = {isa = PBXBuildFile; fileRef = F47C126E1FEBDDFD005D635A /* NativeView.xib */; };
+		F4E9B0081FF239CD006CD49F /* native.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F4E9B0061FF239CD006CD49F /* native.cpp */; };
+		F4E9B00B1FF23AF1006CD49F /* libcore.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F4E9B00A1FF23AF1006CD49F /* libcore.a */; };
+		F4E9B00D1FF23AFC006CD49F /* libgui.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F4E9B00C1FF23AFC006CD49F /* libgui.a */; };
+		F4E9B00F1FF23B07006CD49F /* libsample.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F4E9B00E1FF23B07006CD49F /* libsample.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		F440718F1FEE574E00040835 /* flip.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = flip.png; sourceTree = "<group>"; };
 		F47C12591FEBDD3F005D635A /* GuiLiteDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GuiLiteDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F47C125C1FEBDD3F005D635A /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		F47C125E1FEBDD3F005D635A /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -27,6 +29,12 @@
 		F47C12661FEBDD3F005D635A /* GuiLiteDemo.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = GuiLiteDemo.entitlements; sourceTree = "<group>"; };
 		F47C126C1FEBDD84005D635A /* NativeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeView.swift; sourceTree = "<group>"; };
 		F47C126E1FEBDDFD005D635A /* NativeView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = NativeView.xib; sourceTree = "<group>"; };
+		F4E9B0051FF239CD006CD49F /* GuiLiteDemo-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "GuiLiteDemo-Bridging-Header.h"; sourceTree = "<group>"; };
+		F4E9B0061FF239CD006CD49F /* native.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = native.cpp; sourceTree = "<group>"; };
+		F4E9B0071FF239CD006CD49F /* native.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = native.hpp; sourceTree = "<group>"; };
+		F4E9B00A1FF23AF1006CD49F /* libcore.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcore.a; path = GuiLiteDemo/libs/libcore.a; sourceTree = "<group>"; };
+		F4E9B00C1FF23AFC006CD49F /* libgui.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libgui.a; path = GuiLiteDemo/libs/libgui.a; sourceTree = "<group>"; };
+		F4E9B00E1FF23B07006CD49F /* libsample.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libsample.a; path = GuiLiteDemo/libs/libsample.a; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -34,6 +42,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F4E9B00F1FF23B07006CD49F /* libsample.a in Frameworks */,
+				F4E9B00D1FF23AFC006CD49F /* libgui.a in Frameworks */,
+				F4E9B00B1FF23AF1006CD49F /* libcore.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -45,6 +56,7 @@
 			children = (
 				F47C125B1FEBDD3F005D635A /* GuiLiteDemo */,
 				F47C125A1FEBDD3F005D635A /* Products */,
+				F4E9B0091FF23AF1006CD49F /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -59,7 +71,6 @@
 		F47C125B1FEBDD3F005D635A /* GuiLiteDemo */ = {
 			isa = PBXGroup;
 			children = (
-				F440718F1FEE574E00040835 /* flip.png */,
 				F47C125C1FEBDD3F005D635A /* AppDelegate.swift */,
 				F47C125E1FEBDD3F005D635A /* ViewController.swift */,
 				F47C12601FEBDD3F005D635A /* Assets.xcassets */,
@@ -68,8 +79,21 @@
 				F47C12661FEBDD3F005D635A /* GuiLiteDemo.entitlements */,
 				F47C126C1FEBDD84005D635A /* NativeView.swift */,
 				F47C126E1FEBDDFD005D635A /* NativeView.xib */,
+				F4E9B0061FF239CD006CD49F /* native.cpp */,
+				F4E9B0071FF239CD006CD49F /* native.hpp */,
+				F4E9B0051FF239CD006CD49F /* GuiLiteDemo-Bridging-Header.h */,
 			);
 			path = GuiLiteDemo;
+			sourceTree = "<group>";
+		};
+		F4E9B0091FF23AF1006CD49F /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				F4E9B00E1FF23B07006CD49F /* libsample.a */,
+				F4E9B00C1FF23AFC006CD49F /* libgui.a */,
+				F4E9B00A1FF23AF1006CD49F /* libcore.a */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -103,6 +127,7 @@
 				TargetAttributes = {
 					F47C12581FEBDD3F005D635A = {
 						CreatedOnToolsVersion = 9.2;
+						LastSwiftMigration = 0920;
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -132,7 +157,6 @@
 			files = (
 				F47C126F1FEBDDFD005D635A /* NativeView.xib in Resources */,
 				F47C12611FEBDD3F005D635A /* Assets.xcassets in Resources */,
-				F44071901FEE574E00040835 /* flip.png in Resources */,
 				F47C12641FEBDD3F005D635A /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -146,6 +170,7 @@
 			files = (
 				F47C125F1FEBDD3F005D635A /* ViewController.swift in Sources */,
 				F47C125D1FEBDD3F005D635A /* AppDelegate.swift in Sources */,
+				F4E9B0081FF239CD006CD49F /* native.cpp in Sources */,
 				F47C126D1FEBDD84005D635A /* NativeView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -274,13 +299,20 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = GuiLiteDemo/GuiLiteDemo.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = GuiLiteDemo/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/GuiLiteDemo/libs",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = idea4good.GuiLiteDemo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "GuiLiteDemo/GuiLiteDemo-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 3.0;
 			};
 			name = Debug;
@@ -289,13 +321,19 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = GuiLiteDemo/GuiLiteDemo.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = GuiLiteDemo/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/GuiLiteDemo/libs",
+				);
 				PRODUCT_BUNDLE_IDENTIFIER = idea4good.GuiLiteDemo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "GuiLiteDemo/GuiLiteDemo-Bridging-Header.h";
 				SWIFT_VERSION = 3.0;
 			};
 			name = Release;

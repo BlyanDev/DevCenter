@@ -40,8 +40,16 @@ class NativeView: NSView {
         let dataLength = imgWidth * imgHeight * 4
         let buffer = malloc(dataLength)
         
+        let rawData = get_frame_buffer(0, nil, nil)
+        if rawData == nil{
+            return nil
+        }
+        
         for index in 0..<imgWidth*imgHeight {
-            buffer?.storeBytes(of: 0x0000ff, toByteOffset: index*4, as: UInt32.self)
+            let rgb16 = rawData?.load(fromByteOffset: index * 2, as: UInt16.self)
+            let rgb32 = UInt32(rgb16!)
+            let color = ((rgb32 << 3) & 0xFF) | (((rgb32) << 5) & 0xFF00) | ((rgb32 << 8) & 0xFF0000)
+            buffer?.storeBytes(of: color, toByteOffset: index * 4, as: UInt32.self)
         }
         
         let rawPointer = UnsafeRawPointer(buffer)
