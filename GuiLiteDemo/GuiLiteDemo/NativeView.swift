@@ -21,7 +21,7 @@ class NativeView: NSView {
     }
     
     override func mouseUp(with event: NSEvent) {
-        self.needsDisplay = true
+        
     }
     
     override func mouseDown(with event: NSEvent) {

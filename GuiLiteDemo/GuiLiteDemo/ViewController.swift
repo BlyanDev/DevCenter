@@ -13,11 +13,12 @@ class ViewController: NSViewController {
         super.viewDidLoad()
 
         // Do any additional setup after loading the view.
-        Thread.detachNewThreadSelector(#selector(ViewController.run_native), toTarget: self, with: nil)
+        Thread.detachNewThreadSelector(#selector(ViewController.runNative), toTarget: self, with: nil)
+        Timer.scheduledTimer(withTimeInterval: 0.03, repeats: true, block: {_ in self.updateNativeView()})
         
         let frame = CGRect(x: 0, y: 0, width: 1024, height: 768)
-        let native_view = NativeView(frame: frame)
-        view.addSubview(native_view)
+        self.nativeView = NativeView(frame: frame)
+        view.addSubview(self.nativeView!)
     }
 
     override var representedObject: Any? {
@@ -26,8 +27,17 @@ class ViewController: NSViewController {
         }
     }
     
-    func run_native()
+    func runNative()
     {
         run_host_monitor();
     }
+    
+    func updateNativeView(){
+        if(self.nativeView == nil){
+            return
+        }
+        self.nativeView?.needsDisplay = true
+    }
+    
+    var nativeView: NativeView? = nil
 }
