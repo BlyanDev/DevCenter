@@ -33,6 +33,13 @@ sample_native/libs/x86/*.a
 sample_native/*.wav
 sample/source/*.a
 
+# For Xcode
+.DS_store
+*.swp
+*.lock
+profile
+xcuserdata
+
 #For output
 *.bmp
 dump.txt
