@@ -9,23 +9,41 @@ import Cocoa
 
 class NativeView: NSView {
 
-    @IBOutlet var m_view: NSView!
+    var nativeUiWidth: Int?
+    var nativeUiHeight: Int?
+    var isMouseDown = false
+    
+    func setNativeUiSize(width: Int, height: Int){
+        self.nativeUiWidth = width
+        self.nativeUiHeight = height
+    }
     override func draw(_ dirtyRect: NSRect) {
         super.draw(dirtyRect)
 
         // Drawing code here.
-        let img = buildImage(imgWidth: 1024, imgHeight: 768)
+        let img = buildImage(imgWidth: self.nativeUiWidth!, imgHeight: self.nativeUiHeight!)
         let bg = NSColor.init(patternImage: img!)
         bg.setFill()
         NSRectFill(dirtyRect)
     }
     
     override func mouseUp(with event: NSEvent) {
-        
+        self.isMouseDown = false;
+        let pos = NSEvent.mouseLocation()
+        mouse_up(Int32(pos.x), Int32(768 - pos.y))
     }
     
     override func mouseDown(with event: NSEvent) {
-        
+        self.isMouseDown = true;
+        let pos = NSEvent.mouseLocation()
+        mouse_down(Int32(pos.x), Int32(768 - pos.y))
+    }
+    
+    override func mouseDragged(with event: NSEvent) {
+        if self.isMouseDown{
+            let pos = NSEvent.mouseLocation()
+            mouse_down(Int32(pos.x), Int32(768 - pos.y))
+        }
     }
     
     func buildImage(imgWidth: Int, imgHeight: Int) -> NSImage?{
@@ -48,7 +66,7 @@ class NativeView: NSView {
         for index in 0..<imgWidth*imgHeight {
             let rgb16 = rawData?.load(fromByteOffset: index * 2, as: UInt16.self)
             let rgb32 = UInt32(rgb16!)
-            let color = ((rgb32 << 3) & 0xFF) | (((rgb32) << 5) & 0xFF00) | ((rgb32 << 8) & 0xFF0000)
+            let color = ((rgb32 << 19) & 0xFF0000) | (((rgb32) << 5) & 0xFF00) | ((rgb32 >> 8) & 0xFF)
             buffer?.storeBytes(of: color, toByteOffset: index * 4, as: UInt32.self)
         }
         
