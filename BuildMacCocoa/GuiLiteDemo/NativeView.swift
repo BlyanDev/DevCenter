@@ -1,10 +1,3 @@
-//
-//  NativeView.swift
-//  GuiLiteDemo
-//
-//  Created by Zorro Young on 21/12/17.
-//
-
 import Cocoa
 
 class NativeView: NSView {
@@ -48,6 +41,9 @@ class NativeView: NSView {
     
     func buildImage(imgWidth: Int, imgHeight: Int) -> NSImage?{
         let pixData = getPixels(imgWidth: imgWidth, imgHeight: imgHeight)
+        if(pixData == nil){
+            return nil
+        }
         let providerRef = CGDataProvider(data: pixData!)
         let cgimg = CGImage.init(width: imgWidth, height: imgHeight, bitsPerComponent: 8, bitsPerPixel: 32, bytesPerRow: imgWidth*4, space: CGColorSpaceCreateDeviceRGB(), bitmapInfo: CGBitmapInfo.byteOrder32Big, provider: providerRef!, decode: nil, shouldInterpolate: true, intent: .defaultIntent)
         

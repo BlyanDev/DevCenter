@@ -1,10 +1,3 @@
-//
-//  AppDelegate.swift
-//  GuiLiteDemo
-//
-//  Created by Zorro Young on 21/12/17.
-//
-
 import Cocoa
 
 @NSApplicationMain

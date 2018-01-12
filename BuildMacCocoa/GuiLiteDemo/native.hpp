@@ -1,11 +1,3 @@
-//
-//  native.hpp
-//  MacSample
-//
-//  Created by Zorro Young on 20/12/17.
-//  Copyright © 2017 idea4good. All rights reserved.
-//
-
 #ifndef native_hpp
 #define native_hpp
 
