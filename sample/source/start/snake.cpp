@@ -241,7 +241,7 @@ void create_ui(int display_width, int display_height)
 }
 
 ///////////////////////////////////////////////////////////////
-extern "C" int run_native(int main_cnt, int main_width, int main_height, int sub_cnt, int sub_width, int sub_height, int color_bytes)
+extern "C" int startHostMonitor(int main_cnt, int main_width, int main_height, int sub_cnt, int sub_width, int sub_height, int color_bytes)
 {
 	create_ui(main_width, main_height);
 	single_game();

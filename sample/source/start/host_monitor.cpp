@@ -33,25 +33,21 @@ int run(void** main_fbs, int main_cnt, int main_width, int main_height, void** s
 	//Load UI.
 	for (int i = 0; i < main_cnt; i++)
 	{
-		if ((main_cnt == 1) || (i == (main_cnt - 1)))
+		if (0 == i)
 		{
 			load_ui_single(main_fbs[i], main_width, main_height, color_bytes);
+			continue;
 		}
-		else
-		{
-			load_ui_multi(main_fbs[i], main_width, main_height, color_bytes);
-		}
+		load_ui_multi(main_fbs[i], main_width, main_height, color_bytes);
 	}
 	for (int i = 0; i < sub_cnt; i++)
 	{
-		if ((sub_cnt == 1) || (i == (sub_cnt - 1)))
+		if (0 == i)
 		{
 			load_mini_ui_single(sub_fbs[i], sub_width, sub_height, color_bytes);
+			continue;
 		}
-		else
-		{
-			load_mini_ui_multi(sub_fbs[i], sub_width, sub_height, color_bytes);
-		}
+		load_mini_ui_multi(sub_fbs[i], sub_width, sub_height, color_bytes);
 	}
 
 	//Start system.
